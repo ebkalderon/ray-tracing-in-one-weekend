@@ -39,9 +39,24 @@ fn main() {
 }
 
 fn compute_ray_color(ray: Ray) -> Color {
+    let (center, radius) = (Point3::new(0.0, 0.0, -1.0), 0.5);
+
+    if ray_hits_sphere(center, radius, ray) {
+        return Color::new(1.0, 0.0, 0.0);
+    }
+
     let unit_direction = ray.direction.to_unit();
     let t = 0.5 * (unit_direction.y + 1.0);
     (1.0 - t) * Color::ones() + t * Color::new(0.5, 0.7, 1.0)
+}
+
+fn ray_hits_sphere(center: Point3, radius: f64, ray: Ray) -> bool {
+    let origin_to_center = ray.origin - center;
+    let a = ray.direction.dot(ray.direction);
+    let b = 2.0 * origin_to_center.dot(ray.direction);
+    let c = origin_to_center.dot(origin_to_center) - radius.powi(2);
+    let discriminant = b.powi(2) - 4.0 * (a * c);
+    discriminant > 0.0
 }
 
 fn print_color(pixel: Color) {
