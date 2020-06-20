@@ -1,6 +1,9 @@
 use std::fmt::{self, Display, Formatter};
 use std::ops::{Add, AddAssign, Div, DivAssign, Index, IndexMut, Mul, MulAssign, Neg, Sub};
 
+pub type Color = Vec3;
+pub type Point3 = Vec3;
+
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct Vec3 {
     pub x: f64,
