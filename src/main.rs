@@ -2,6 +2,7 @@ use geom::{Hittable, Sphere};
 use ray::Ray;
 use vec3::{Color, Point3, Vec3};
 
+mod camera;
 mod geom;
 mod ray;
 mod vec3;
