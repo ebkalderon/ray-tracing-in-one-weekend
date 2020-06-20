@@ -41,8 +41,9 @@ fn main() {
 fn compute_ray_color(ray: Ray) -> Color {
     let (center, radius) = (Point3::new(0.0, 0.0, -1.0), 0.5);
 
-    if ray_hits_sphere(center, radius, ray) {
-        return Color::new(1.0, 0.0, 0.0);
+    if let Some(t) = ray_hits_sphere(center, radius, ray) {
+        let normal = (ray.point_at(t) - Vec3::new(0.0, 0.0, -1.0)).to_unit();
+        return 0.5 * Color::new(normal.x + 1.0, normal.y + 1.0, normal.z + 1.0);
     }
 
     let unit_direction = ray.direction.to_unit();
@@ -50,13 +51,18 @@ fn compute_ray_color(ray: Ray) -> Color {
     (1.0 - t) * Color::ones() + t * Color::new(0.5, 0.7, 1.0)
 }
 
-fn ray_hits_sphere(center: Point3, radius: f64, ray: Ray) -> bool {
+fn ray_hits_sphere(center: Point3, radius: f64, ray: Ray) -> Option<f64> {
     let origin_to_center = ray.origin - center;
     let a = ray.direction.dot(ray.direction);
     let b = 2.0 * origin_to_center.dot(ray.direction);
     let c = origin_to_center.dot(origin_to_center) - radius.powi(2);
     let discriminant = b.powi(2) - 4.0 * (a * c);
-    discriminant > 0.0
+
+    if discriminant < 0.0 {
+        None
+    } else {
+        Some((-b - discriminant.sqrt()) / (2.0 * a))
+    }
 }
 
 fn print_color(pixel: Color) {
