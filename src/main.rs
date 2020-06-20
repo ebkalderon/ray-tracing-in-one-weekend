@@ -1,3 +1,5 @@
+mod vec3;
+
 fn main() {
     let (image_width, image_height) = (256, 256);
 
