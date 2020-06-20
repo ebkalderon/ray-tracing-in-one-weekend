@@ -1,6 +1,9 @@
+use rand::{thread_rng, Rng};
+
+use camera::Camera;
 use geom::{Hittable, Sphere};
 use ray::Ray;
-use vec3::{Color, Point3, Vec3};
+use vec3::{Color, Point3};
 
 mod camera;
 mod geom;
@@ -10,36 +13,29 @@ mod vec3;
 const ASPECT_RATIO: f64 = 16.0 / 9.0;
 const IMAGE_WIDTH: u32 = 384;
 const IMAGE_HEIGHT: u32 = (IMAGE_WIDTH as f64 / ASPECT_RATIO) as u32;
-
-const VIEWPORT_HEIGHT: f64 = 2.0;
-const VIEWPORT_WIDTH: f64 = ASPECT_RATIO * VIEWPORT_HEIGHT;
-const FOCAL_LENGTH: f64 = 1.0;
+const SAMPLES_PER_PIXEL: u32 = 100;
 
 fn main() {
     println!("P3\n{} {}\n255", IMAGE_WIDTH, IMAGE_HEIGHT);
-
-    let origin = Point3::zeros();
-    let horizontal = Vec3::new(VIEWPORT_WIDTH, 0.0, 0.0);
-    let vertical = Vec3::new(0.0, VIEWPORT_HEIGHT, 0.0);
-    let lower_left_corner =
-        origin - (horizontal / 2.0) - (vertical / 2.0) - Vec3::new(0.0, 0.0, FOCAL_LENGTH);
 
     let world: Vec<Box<dyn Hittable>> = vec![
         Box::new(Sphere::new(Point3::new(0.0, 0.0, -1.0), 0.5)),
         Box::new(Sphere::new(Point3::new(0.0, -100.5, -1.0), 100.0)),
     ];
 
+    let camera = Camera::default();
+
     for j in (0..IMAGE_HEIGHT).rev() {
         eprint!("\rScanlines remaining: {:0>3}", j);
         for i in 0..IMAGE_WIDTH {
-            let screen_x = i as f64 / (IMAGE_WIDTH - 1) as f64;
-            let screen_y = j as f64 / (IMAGE_HEIGHT - 1) as f64;
-            let ray = Ray::new(
-                origin,
-                lower_left_corner + (screen_x * horizontal) + (screen_y * vertical) - origin,
-            );
-            let pixel_color = compute_ray_color(ray, &world[..]);
-            print_color(pixel_color);
+            let mut pixel_color = Color::zeros();
+            for _ in 0..SAMPLES_PER_PIXEL {
+                let u = (i as f64 + thread_rng().gen_range(0.0, 1.0)) / (IMAGE_WIDTH - 1) as f64;
+                let v = (j as f64 + thread_rng().gen_range(0.0, 1.0)) / (IMAGE_HEIGHT - 1) as f64;
+                let ray = camera.ray_at(u, v);
+                pixel_color += compute_ray_color(ray, &world[..]);
+            }
+            print_color(pixel_color, SAMPLES_PER_PIXEL);
         }
     }
 
@@ -56,9 +52,23 @@ fn compute_ray_color(ray: Ray, world: &[Box<dyn Hittable>]) -> Color {
     (1.0 - t) * Color::ones() + t * Color::new(0.5, 0.7, 1.0)
 }
 
-fn print_color(pixel: Color) {
-    let ir = (255.999 * pixel.x) as i64;
-    let ig = (255.999 * pixel.y) as i64;
-    let ib = (255.999 * pixel.z) as i64;
+fn print_color(pixel: Color, samples_per_pixel: u32) {
+    let scale = 1.0 / samples_per_pixel as f64;
+    let (r, g, b) = (pixel.x * scale, pixel.y * scale, pixel.z * scale);
+
+    let ir = (256.0 * clamp(r, 0.0, 0.999)) as i64;
+    let ig = (256.0 * clamp(g, 0.0, 0.999)) as i64;
+    let ib = (256.0 * clamp(b, 0.0, 0.999)) as i64;
     println!("{} {} {}", ir, ig, ib);
+}
+
+fn clamp(mut x: f64, min: f64, max: f64) -> f64 {
+    debug_assert!(min <= max);
+    if x < min {
+        x = min;
+    }
+    if x > max {
+        x = max;
+    }
+    x
 }
