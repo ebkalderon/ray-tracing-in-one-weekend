@@ -1,3 +1,4 @@
+use geom::{Hittable, Sphere};
 use ray::Ray;
 use vec3::{Color, Point3, Vec3};
 
@@ -22,6 +23,11 @@ fn main() {
     let lower_left_corner =
         origin - (horizontal / 2.0) - (vertical / 2.0) - Vec3::new(0.0, 0.0, FOCAL_LENGTH);
 
+    let world: Vec<Box<dyn Hittable>> = vec![
+        Box::new(Sphere::new(Point3::new(0.0, 0.0, -1.0), 0.5)),
+        Box::new(Sphere::new(Point3::new(0.0, -100.5, -1.0), 100.0)),
+    ];
+
     for j in (0..IMAGE_HEIGHT).rev() {
         eprint!("\rScanlines remaining: {:0>3}", j);
         for i in 0..IMAGE_WIDTH {
@@ -31,7 +37,7 @@ fn main() {
                 origin,
                 lower_left_corner + (screen_x * horizontal) + (screen_y * vertical) - origin,
             );
-            let pixel_color = compute_ray_color(ray);
+            let pixel_color = compute_ray_color(ray, &world[..]);
             print_color(pixel_color);
         }
     }
@@ -39,31 +45,14 @@ fn main() {
     eprintln!("\nDone.");
 }
 
-fn compute_ray_color(ray: Ray) -> Color {
-    let (center, radius) = (Point3::new(0.0, 0.0, -1.0), 0.5);
-
-    if let Some(t) = ray_hits_sphere(center, radius, ray) {
-        let normal = (ray.point_at(t) - Vec3::new(0.0, 0.0, -1.0)).to_unit();
-        return 0.5 * Color::new(normal.x + 1.0, normal.y + 1.0, normal.z + 1.0);
+fn compute_ray_color(ray: Ray, world: &[Box<dyn Hittable>]) -> Color {
+    if let Some(hit_record) = world.hit(ray, (0.0, std::f64::MAX)) {
+        return 0.5 * (hit_record.normal + Color::ones());
     }
 
     let unit_direction = ray.direction.to_unit();
     let t = 0.5 * (unit_direction.y + 1.0);
     (1.0 - t) * Color::ones() + t * Color::new(0.5, 0.7, 1.0)
-}
-
-fn ray_hits_sphere(center: Point3, radius: f64, ray: Ray) -> Option<f64> {
-    let origin_to_center = ray.origin - center;
-    let a = ray.direction.len_squared();
-    let half_b = origin_to_center.dot(ray.direction);
-    let c = origin_to_center.len_squared() - radius.powi(2);
-    let discriminant = half_b.powi(2) - a * c;
-
-    if discriminant < 0.0 {
-        None
-    } else {
-        Some((-half_b - discriminant.sqrt()) / a)
-    }
 }
 
 fn print_color(pixel: Color) {
