@@ -28,15 +28,15 @@ impl Hittable for Sphere {
             let t = (-half_b - root) / a;
             if t < t_max && t > t_min {
                 let point = ray.point_at(t);
-                let normal = (point - self.center) / self.radius;
-                return Some(HitRecord::new(point, normal, t));
+                let outward_normal = (point - self.center) / self.radius;
+                return Some(HitRecord::with_face_normal(ray, point, outward_normal, t));
             }
 
             let t = (-half_b + root) / a;
             if t < t_max && t > t_min {
                 let point = ray.point_at(t);
-                let normal = (point - self.center) / self.radius;
-                return Some(HitRecord::new(point, normal, t));
+                let outward_normal = (point - self.center) / self.radius;
+                return Some(HitRecord::with_face_normal(ray, point, outward_normal, t));
             }
         }
 
