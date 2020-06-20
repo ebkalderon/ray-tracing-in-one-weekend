@@ -53,15 +53,15 @@ fn compute_ray_color(ray: Ray) -> Color {
 
 fn ray_hits_sphere(center: Point3, radius: f64, ray: Ray) -> Option<f64> {
     let origin_to_center = ray.origin - center;
-    let a = ray.direction.dot(ray.direction);
-    let b = 2.0 * origin_to_center.dot(ray.direction);
-    let c = origin_to_center.dot(origin_to_center) - radius.powi(2);
-    let discriminant = b.powi(2) - 4.0 * (a * c);
+    let a = ray.direction.len_squared();
+    let half_b = origin_to_center.dot(ray.direction);
+    let c = origin_to_center.len_squared() - radius.powi(2);
+    let discriminant = half_b.powi(2) - a * c;
 
     if discriminant < 0.0 {
         None
     } else {
-        Some((-b - discriminant.sqrt()) / (2.0 * a))
+        Some((-half_b - discriminant.sqrt()) / a)
     }
 }
 
