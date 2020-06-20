@@ -1,5 +1,6 @@
 use vec3::Color;
 
+mod ray;
 mod vec3;
 
 fn main() {
