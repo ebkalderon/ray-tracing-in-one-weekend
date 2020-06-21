@@ -14,6 +14,7 @@ const ASPECT_RATIO: f64 = 16.0 / 9.0;
 const IMAGE_WIDTH: u32 = 384;
 const IMAGE_HEIGHT: u32 = (IMAGE_WIDTH as f64 / ASPECT_RATIO) as u32;
 const SAMPLES_PER_PIXEL: u32 = 100;
+const MAX_BOUNCE_DEPTH: u32 = 50;
 
 fn main() {
     println!("P3\n{} {}\n255", IMAGE_WIDTH, IMAGE_HEIGHT);
@@ -33,7 +34,7 @@ fn main() {
                 let u = (i as f64 + thread_rng().gen_range(0.0, 1.0)) / (IMAGE_WIDTH - 1) as f64;
                 let v = (j as f64 + thread_rng().gen_range(0.0, 1.0)) / (IMAGE_HEIGHT - 1) as f64;
                 let ray = camera.ray_at(u, v);
-                pixel_color += compute_ray_color(ray, &world[..]);
+                pixel_color += compute_ray_color(ray, &world[..], MAX_BOUNCE_DEPTH);
             }
             print_color(pixel_color, SAMPLES_PER_PIXEL);
         }
@@ -42,11 +43,16 @@ fn main() {
     eprintln!("\nDone.");
 }
 
-fn compute_ray_color(ray: Ray, world: &[Box<dyn Hittable>]) -> Color {
+fn compute_ray_color(ray: Ray, world: &[Box<dyn Hittable>], depth: u32) -> Color {
+    if depth <= 0 {
+        // If we've exceeded the ray bounce limit, no more light is gathered.
+        return Color::zeros();
+    }
+
     if let Some(hit_record) = world.hit(ray, (0.0, std::f64::MAX)) {
         let target = hit_record.point + hit_record.normal + Vec3::random_in_unit_sphere();
         let bounce_ray = Ray::new(hit_record.point, target - hit_record.point);
-        return 0.5 * compute_ray_color(bounce_ray, world);
+        return 0.5 * compute_ray_color(bounce_ray, world, depth - 1);
     }
 
     let unit_direction = ray.direction.to_unit();
