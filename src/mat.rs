@@ -135,6 +135,9 @@ impl Material for Dielectric {
             if etai_over_etat * sin_theta > 1.0 {
                 let reflected = unit_direction.reflect(hit.normal);
                 Ray::new(hit.point, reflected)
+            } else if rand::random::<f64>() < schlick(cos_theta, etai_over_etat) {
+                let reflected = unit_direction.reflect(hit.normal);
+                Ray::new(hit.point, reflected)
             } else {
                 let refracted = unit_direction.refract(hit.normal, etai_over_etat);
                 Ray::new(hit.point, refracted)
@@ -146,4 +149,10 @@ impl Material for Dielectric {
             attenuation: Color::ones(),
         })
     }
+}
+
+fn schlick(cosine: f64, refraction_index: f64) -> f64 {
+    let r0 = (1.0 - refraction_index) / (1.0 + refraction_index);
+    let r0_squared = r0.powi(2);
+    r0_squared + (1.0 - r0_squared) * (1.0 - cosine).powi(5)
 }
