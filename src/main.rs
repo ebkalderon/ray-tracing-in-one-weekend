@@ -7,6 +7,7 @@ use vec3::{Color, Point3, Vec3};
 
 mod camera;
 mod geom;
+mod mat;
 mod ray;
 mod vec3;
 
