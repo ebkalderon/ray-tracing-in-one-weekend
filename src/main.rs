@@ -2,6 +2,7 @@ use rand::{thread_rng, Rng};
 
 use camera::Camera;
 use geom::{Hittable, Sphere};
+use mat::Lambertian;
 use ray::Ray;
 use vec3::{Color, Point3, Vec3};
 
@@ -21,8 +22,16 @@ fn main() {
     println!("P3\n{} {}\n255", IMAGE_WIDTH, IMAGE_HEIGHT);
 
     let world: Vec<Box<dyn Hittable>> = vec![
-        Box::new(Sphere::new(Point3::new(0.0, 0.0, -1.0), 0.5)),
-        Box::new(Sphere::new(Point3::new(0.0, -100.5, -1.0), 100.0)),
+        Box::new(Sphere::new(
+            Point3::new(0.0, 0.0, -1.0),
+            0.5,
+            Box::new(Lambertian::default()),
+        )),
+        Box::new(Sphere::new(
+            Point3::new(0.0, -100.5, -1.0),
+            100.0,
+            Box::new(Lambertian::default()),
+        )),
     ];
 
     let camera = Camera::default();

@@ -1,16 +1,22 @@
 use super::{HitRecord, Hittable};
+use crate::mat::Material;
 use crate::ray::Ray;
 use crate::vec3::Point3;
 
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Debug)]
 pub struct Sphere {
     pub center: Point3,
     pub radius: f64,
+    pub material: Box<dyn Material>,
 }
 
 impl Sphere {
-    pub const fn new(center: Point3, radius: f64) -> Self {
-        Sphere { center, radius }
+    pub fn new(center: Point3, radius: f64, material: Box<dyn Material>) -> Self {
+        Sphere {
+            center,
+            radius,
+            material,
+        }
     }
 }
 
@@ -29,14 +35,26 @@ impl Hittable for Sphere {
             if t < t_max && t > t_min {
                 let point = ray.point_at(t);
                 let outward_normal = (point - self.center) / self.radius;
-                return Some(HitRecord::with_face_normal(ray, point, outward_normal, t));
+                return Some(HitRecord::with_face_normal(
+                    ray,
+                    point,
+                    outward_normal,
+                    &*self.material,
+                    t,
+                ));
             }
 
             let t = (-half_b + root) / a;
             if t < t_max && t > t_min {
                 let point = ray.point_at(t);
                 let outward_normal = (point - self.center) / self.radius;
-                return Some(HitRecord::with_face_normal(ray, point, outward_normal, t));
+                return Some(HitRecord::with_face_normal(
+                    ray,
+                    point,
+                    outward_normal,
+                    &*self.material,
+                    t,
+                ));
             }
         }
 

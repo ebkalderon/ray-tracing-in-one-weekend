@@ -1,5 +1,6 @@
 pub use self::sphere::Sphere;
 
+use crate::mat::Material;
 use crate::ray::Ray;
 use crate::vec3::{Point3, Vec3};
 
@@ -24,25 +25,39 @@ impl<T: AsRef<[Box<dyn Hittable>]>> Hittable for T {
     }
 }
 
-#[derive(Clone, Debug, PartialEq)]
-pub struct HitRecord {
+#[derive(Clone, Debug)]
+pub struct HitRecord<'a> {
     pub point: Point3,
     pub normal: Vec3,
+    pub material: &'a dyn Material,
     pub t: f64,
     pub is_front_face: bool,
 }
 
-impl HitRecord {
-    pub const fn new(point: Point3, normal: Vec3, t: f64, is_front_face: bool) -> Self {
+impl<'a> HitRecord<'a> {
+    pub fn new(
+        point: Point3,
+        normal: Vec3,
+        material: &'a dyn Material,
+        t: f64,
+        is_front_face: bool,
+    ) -> Self {
         HitRecord {
             point,
             normal,
+            material,
             t,
             is_front_face,
         }
     }
 
-    pub fn with_face_normal(ray: Ray, point: Point3, outward_normal: Vec3, t: f64) -> Self {
+    pub fn with_face_normal(
+        ray: Ray,
+        point: Point3,
+        outward_normal: Vec3,
+        material: &'a dyn Material,
+        t: f64,
+    ) -> Self {
         let is_front_face = ray.direction.dot(outward_normal) < 0.0;
         let normal = if is_front_face {
             outward_normal
@@ -50,13 +65,14 @@ impl HitRecord {
             -outward_normal
         };
 
-        HitRecord::new(point, normal, t, is_front_face)
+        HitRecord::new(point, normal, material, t, is_front_face)
     }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::mat::Lambertian;
 
     const ASPECT_RATIO: f64 = 16.0 / 9.0;
     const IMAGE_WIDTH: u32 = 384;
@@ -68,8 +84,16 @@ mod tests {
 
     fn generate_world() -> Vec<Box<dyn Hittable>> {
         vec![
-            Box::new(Sphere::new(Point3::new(0.0, 0.0, -1.0), 0.5)),
-            Box::new(Sphere::new(Point3::new(0.0, -100.5, -1.0), 100.0)),
+            Box::new(Sphere::new(
+                Point3::new(0.0, 0.0, -1.0),
+                0.5,
+                Box::new(Lambertian::default()),
+            )),
+            Box::new(Sphere::new(
+                Point3::new(0.0, -100.5, -1.0),
+                100.0,
+                Box::new(Lambertian::default()),
+            )),
         ]
     }
 
@@ -110,6 +134,6 @@ mod tests {
         let random_ray = Ray::new(Point3::new(0.0, 200.0, 0.0), Vec3::new(0.0, 200.0, 0.0));
 
         let hit_record = world.hit(random_ray, (0.0, f64::MAX));
-        assert_eq!(hit_record, None);
+        assert!(hit_record.is_none());
     }
 }
