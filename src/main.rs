@@ -2,7 +2,7 @@ use rand::{thread_rng, Rng};
 
 use camera::Camera;
 use geom::{Hittable, Sphere};
-use mat::{Lambertian, Scatter};
+use mat::{Dielectric, Lambertian, Metallic, Scatter};
 use ray::Ray;
 use vec3::{Color, Point3};
 
@@ -21,17 +21,36 @@ const MAX_BOUNCE_DEPTH: u32 = 50;
 fn main() {
     println!("P3\n{} {}\n255", IMAGE_WIDTH, IMAGE_HEIGHT);
 
-    let r = (std::f64::consts::PI / 4.0).cos();
     let world: Vec<Box<dyn Hittable>> = vec![
+        // Center sphere
         Box::new(Sphere::new(
-            Point3::new(-r, 0.0, -1.0),
-            r,
-            Box::new(Lambertian::new(Color::new(0.0, 0.0, 1.0))),
+            Point3::new(0.0, 0.0, -1.0),
+            0.5,
+            Box::new(Lambertian::new(Color::new(0.1, 0.2, 0.5))),
         )),
+        // Ground
         Box::new(Sphere::new(
-            Point3::new(r, 0.0, -1.0),
-            r,
-            Box::new(Lambertian::new(Color::new(1.0, 0.0, 0.0))),
+            Point3::new(0.0, -100.5, -1.0),
+            100.0,
+            Box::new(Lambertian::new(Color::new(0.8, 0.8, 0.0))),
+        )),
+        // Right sphere
+        Box::new(Sphere::new(
+            Point3::new(1.0, 0.0, -1.0),
+            0.5,
+            Box::new(Metallic::new(Color::new(0.8, 0.6, 0.2), 0.3)),
+        )),
+        // Left sphere (outer)
+        Box::new(Sphere::new(
+            Point3::new(-1.0, 0.0, -1.0),
+            0.5,
+            Box::new(Dielectric::new(1.5)),
+        )),
+        // Left sphere (inner)
+        Box::new(Sphere::new(
+            Point3::new(-1.0, 0.0, -1.0),
+            -0.45,
+            Box::new(Dielectric::new(1.5)),
         )),
     ];
 
