@@ -62,7 +62,13 @@ fn compute_ray_color(ray: Ray, world: &[Box<dyn Hittable>], depth: u32) -> Color
 
 fn print_color(pixel: Color, samples_per_pixel: u32) {
     let scale = 1.0 / samples_per_pixel as f64;
-    let (r, g, b) = (pixel.x * scale, pixel.y * scale, pixel.z * scale);
+    let (r, g, b) = {
+        // Divide the color total by the number of samples and gamma-correct for gamma=2.0.
+        let r = (pixel.x * scale).sqrt();
+        let g = (pixel.y * scale).sqrt();
+        let b = (pixel.z * scale).sqrt();
+        (r, g, b)
+    };
 
     let ir = (256.0 * clamp(r, 0.0, 0.999)) as i64;
     let ig = (256.0 * clamp(g, 0.0, 0.999)) as i64;
