@@ -94,6 +94,11 @@ impl Vec3 {
     pub fn to_unit(self) -> Self {
         self / self.len()
     }
+
+    #[inline]
+    pub fn reflect(self, surface_normal: Self) -> Self {
+        self - 2.0 * self.dot(surface_normal) * surface_normal
+    }
 }
 
 impl Display for Vec3 {
