@@ -4,6 +4,10 @@ version = "0.1.0"
 authors = ["Eyal Kalderon <ebkalderon@gmail.com>"]
 edition = "2018"
 
+[features]
+default = ["lambertian"]
+lambertian = []
+
 [dependencies]
 rand = "0.7"
 
