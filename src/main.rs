@@ -4,7 +4,7 @@ use camera::Camera;
 use geom::{Hittable, Sphere};
 use mat::{Dielectric, Lambertian, Metallic, Scatter};
 use ray::Ray;
-use vec3::{Color, Point3};
+use vec3::{Color, Point3, Vec3};
 
 mod camera;
 mod geom;
@@ -18,43 +18,85 @@ const IMAGE_HEIGHT: u32 = (IMAGE_WIDTH as f64 / ASPECT_RATIO) as u32;
 const SAMPLES_PER_PIXEL: u32 = 100;
 const MAX_BOUNCE_DEPTH: u32 = 50;
 
-fn main() {
-    println!("P3\n{} {}\n255", IMAGE_WIDTH, IMAGE_HEIGHT);
+fn random_scene() -> Vec<Box<dyn Hittable>> {
+    let mut world: Vec<Box<dyn Hittable>> = Vec::with_capacity(11 * 11);
 
-    let world: Vec<Box<dyn Hittable>> = vec![
-        // Center sphere
+    world.push(Box::new(Sphere::new(
+        Point3::new(0.0, -1000.0, 0.0),
+        1000.0,
+        Box::new(Lambertian::new(Color::new(0.5, 0.5, 0.5))),
+    )));
+
+    for a in -11..11 {
+        for b in -11..11 {
+            let choose_material: f64 = rand::random();
+            let center = Point3::new(
+                a as f64 + 0.9 * rand::random::<f64>(),
+                0.2,
+                b as f64 + 0.9 * rand::random::<f64>(),
+            );
+
+            if (center - Point3::new(4.0, 0.2, 0.0)).len() > 0.9 {
+                if choose_material < 0.8 {
+                    let albedo = Color::random() * Color::random();
+                    let material = Lambertian::new(albedo);
+                    world.push(Box::new(Sphere::new(center, 0.2, Box::new(material))));
+                } else if choose_material < 0.95 {
+                    let albedo = Color::random() * Color::random();
+                    let fuzz = rand::random();
+                    let material = Metallic::new(albedo, fuzz);
+                    world.push(Box::new(Sphere::new(center, 0.2, Box::new(material))));
+                } else {
+                    let material = Dielectric::new(1.5);
+                    world.push(Box::new(Sphere::new(center, 0.2, Box::new(material))));
+                }
+            }
+        }
+    }
+
+    let large_spheres: Vec<Box<dyn Hittable>> = vec![
         Box::new(Sphere::new(
-            Point3::new(0.0, 0.0, -1.0),
-            0.5,
-            Box::new(Lambertian::new(Color::new(0.1, 0.2, 0.5))),
-        )),
-        // Ground
-        Box::new(Sphere::new(
-            Point3::new(0.0, -100.5, -1.0),
-            100.0,
-            Box::new(Lambertian::new(Color::new(0.8, 0.8, 0.0))),
-        )),
-        // Right sphere
-        Box::new(Sphere::new(
-            Point3::new(1.0, 0.0, -1.0),
-            0.5,
-            Box::new(Metallic::new(Color::new(0.8, 0.6, 0.2), 0.3)),
-        )),
-        // Left sphere (outer)
-        Box::new(Sphere::new(
-            Point3::new(-1.0, 0.0, -1.0),
-            0.5,
+            Point3::new(0.0, 1.0, 0.0),
+            1.0,
             Box::new(Dielectric::new(1.5)),
         )),
-        // Left sphere (inner)
         Box::new(Sphere::new(
-            Point3::new(-1.0, 0.0, -1.0),
-            -0.45,
-            Box::new(Dielectric::new(1.5)),
+            Point3::new(-4.0, 1.0, 0.0),
+            1.0,
+            Box::new(Lambertian::new(Color::new(0.4, 0.2, 0.1))),
+        )),
+        Box::new(Sphere::new(
+            Point3::new(4.0, 1.0, 0.0),
+            1.0,
+            Box::new(Metallic::new(Color::new(0.7, 0.6, 0.5), 0.0)),
         )),
     ];
 
-    let camera = Camera::default();
+    world.extend(large_spheres);
+    world
+}
+
+fn main() {
+    println!("P3\n{} {}\n255", IMAGE_WIDTH, IMAGE_HEIGHT);
+
+    let world = random_scene();
+
+    let camera = {
+        let up_vec = Vec3::new(0.0, 1.0, 0.0);
+        let look_from = Point3::new(13.0, 2.0, 3.0);
+        let look_at = Point3::zeros();
+        let aperture = 0.1;
+        let focus_dist = 10.0;
+        Camera::new(
+            up_vec,
+            look_from,
+            look_at,
+            20.0,
+            ASPECT_RATIO,
+            aperture,
+            focus_dist,
+        )
+    };
 
     for j in (0..IMAGE_HEIGHT).rev() {
         eprint!("\rScanlines remaining: {:0>3}", j);
