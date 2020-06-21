@@ -2,7 +2,7 @@ use rand::{thread_rng, Rng};
 
 use camera::Camera;
 use geom::{Hittable, Sphere};
-use mat::{Lambertian, Scatter};
+use mat::{Lambertian, Metallic, Scatter};
 use ray::Ray;
 use vec3::{Color, Point3};
 
@@ -22,15 +22,29 @@ fn main() {
     println!("P3\n{} {}\n255", IMAGE_WIDTH, IMAGE_HEIGHT);
 
     let world: Vec<Box<dyn Hittable>> = vec![
+        // Center sphere
         Box::new(Sphere::new(
             Point3::new(0.0, 0.0, -1.0),
             0.5,
-            Box::new(Lambertian::default()),
+            Box::new(Lambertian::new(Color::new(0.7, 0.3, 0.3))),
         )),
+        // Ground
         Box::new(Sphere::new(
             Point3::new(0.0, -100.5, -1.0),
             100.0,
-            Box::new(Lambertian::default()),
+            Box::new(Lambertian::new(Color::new(0.8, 0.8, 0.0))),
+        )),
+        // Right sphere
+        Box::new(Sphere::new(
+            Point3::new(1.0, 0.0, -1.0),
+            0.5,
+            Box::new(Metallic::new(Color::new(0.8, 0.6, 0.2))),
+        )),
+        // Left sphere
+        Box::new(Sphere::new(
+            Point3::new(-1.0, 0.0, -1.0),
+            0.5,
+            Box::new(Metallic::new(Color::new(0.8, 0.8, 0.8))),
         )),
     ];
 
