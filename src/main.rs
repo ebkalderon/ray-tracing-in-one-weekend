@@ -3,7 +3,7 @@ use rand::{thread_rng, Rng};
 use camera::Camera;
 use geom::{Hittable, Sphere};
 use ray::Ray;
-use vec3::{Color, Point3};
+use vec3::{Color, Point3, Vec3};
 
 mod camera;
 mod geom;
@@ -44,7 +44,9 @@ fn main() {
 
 fn compute_ray_color(ray: Ray, world: &[Box<dyn Hittable>]) -> Color {
     if let Some(hit_record) = world.hit(ray, (0.0, std::f64::MAX)) {
-        return 0.5 * (hit_record.normal + Color::ones());
+        let target = hit_record.point + hit_record.normal + Vec3::random_in_unit_sphere();
+        let bounce_ray = Ray::new(hit_record.point, target - hit_record.point);
+        return 0.5 * compute_ray_color(bounce_ray, world);
     }
 
     let unit_direction = ray.direction.to_unit();
