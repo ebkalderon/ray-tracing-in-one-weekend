@@ -40,3 +40,31 @@ impl Material for Lambertian {
         })
     }
 }
+
+/// Implements the simpler hemispherical scattering method.
+#[derive(Clone, Debug, PartialEq)]
+pub struct SimpleDiffuse {
+    pub albedo: Color,
+}
+
+impl SimpleDiffuse {
+    pub const fn new(albedo: Color) -> Self {
+        SimpleDiffuse { albedo }
+    }
+}
+
+impl Default for SimpleDiffuse {
+    fn default() -> Self {
+        SimpleDiffuse::new(Color::new(0.5, 0.5, 0.5))
+    }
+}
+
+impl Material for SimpleDiffuse {
+    fn scatter(&self, _incoming: Ray, hit: &HitRecord) -> Option<Scatter> {
+        let scatter_direction = Vec3::random_in_hemisphere(hit.normal);
+        Some(Scatter {
+            ray: Ray::new(hit.point, scatter_direction),
+            attenuation: self.albedo,
+        })
+    }
+}
