@@ -49,7 +49,7 @@ fn compute_ray_color(ray: Ray, world: &[Box<dyn Hittable>], depth: u32) -> Color
         return Color::zeros();
     }
 
-    if let Some(hit_record) = world.hit(ray, (0.0, std::f64::MAX)) {
+    if let Some(hit_record) = world.hit(ray, (0.001, std::f64::MAX)) {
         let target = hit_record.point + hit_record.normal + Vec3::random_in_unit_sphere();
         let bounce_ray = Ray::new(hit_record.point, target - hit_record.point);
         return 0.5 * compute_ray_color(bounce_ray, world, depth - 1);
