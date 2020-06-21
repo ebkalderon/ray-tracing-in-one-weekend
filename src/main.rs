@@ -38,13 +38,13 @@ fn main() {
         Box::new(Sphere::new(
             Point3::new(1.0, 0.0, -1.0),
             0.5,
-            Box::new(Metallic::new(Color::new(0.8, 0.6, 0.2))),
+            Box::new(Metallic::new(Color::new(0.8, 0.6, 0.2), 1.0)),
         )),
         // Left sphere
         Box::new(Sphere::new(
             Point3::new(-1.0, 0.0, -1.0),
             0.5,
-            Box::new(Metallic::new(Color::new(0.8, 0.8, 0.8))),
+            Box::new(Metallic::new(Color::new(0.8, 0.8, 0.8), 0.3)),
         )),
     ];
 

@@ -72,24 +72,31 @@ impl Material for SimpleDiffuse {
 #[derive(Clone, Debug, PartialEq)]
 pub struct Metallic {
     pub albedo: Color,
+    pub fuzz: f64,
 }
 
 impl Metallic {
-    pub const fn new(albedo: Color) -> Self {
-        Metallic { albedo }
+    pub fn new(albedo: Color, fuzz: f64) -> Self {
+        Metallic {
+            albedo,
+            fuzz: if fuzz < 1.0 { fuzz } else { 1.0 },
+        }
     }
 }
 
 impl Default for Metallic {
     fn default() -> Self {
-        Metallic::new(Color::new(0.8, 0.8, 0.8))
+        Metallic::new(Color::new(0.8, 0.8, 0.8), 0.0)
     }
 }
 
 impl Material for Metallic {
     fn scatter(&self, incoming: Ray, hit: &HitRecord) -> Option<Scatter> {
         let reflected = incoming.direction.to_unit().reflect(hit.normal);
-        let scattered = Ray::new(hit.point, reflected);
+        let scattered = Ray::new(
+            hit.point,
+            reflected + self.fuzz * Vec3::random_in_unit_sphere(),
+        );
         if scattered.direction.dot(hit.normal) > 0.0 {
             Some(Scatter {
                 ray: scattered,
