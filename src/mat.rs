@@ -107,3 +107,31 @@ impl Material for Metallic {
         }
     }
 }
+
+#[derive(Clone, Debug, PartialEq)]
+pub struct Dielectric {
+    pub refraction_index: f64,
+}
+
+impl Dielectric {
+    pub const fn new(refraction_index: f64) -> Self {
+        Dielectric { refraction_index }
+    }
+}
+
+impl Material for Dielectric {
+    fn scatter(&self, incoming: Ray, hit: &HitRecord) -> Option<Scatter> {
+        let etai_over_etat = if hit.is_front_face {
+            1.0 / self.refraction_index
+        } else {
+            self.refraction_index
+        };
+
+        let unit_direction = incoming.direction.to_unit();
+        let refracted = unit_direction.refract(hit.normal, etai_over_etat);
+        Some(Scatter {
+            ray: Ray::new(hit.point, refracted),
+            attenuation: Color::ones(),
+        })
+    }
+}

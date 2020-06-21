@@ -99,6 +99,14 @@ impl Vec3 {
     pub fn reflect(self, surface_normal: Self) -> Self {
         self - 2.0 * self.dot(surface_normal) * surface_normal
     }
+
+    #[inline]
+    pub fn refract(self, surface_normal: Self, etai_over_etat: f64) -> Self {
+        let cos_theta = (-self).dot(surface_normal);
+        let r_out_perp = etai_over_etat * (self + cos_theta * surface_normal);
+        let r_out_parallel = -(1.0 - r_out_perp.len_squared()).abs().sqrt() * surface_normal;
+        r_out_perp + r_out_parallel
+    }
 }
 
 impl Display for Vec3 {

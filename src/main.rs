@@ -2,7 +2,7 @@ use rand::{thread_rng, Rng};
 
 use camera::Camera;
 use geom::{Hittable, Sphere};
-use mat::{Lambertian, Metallic, Scatter};
+use mat::{Dielectric, Lambertian, Metallic, Scatter};
 use ray::Ray;
 use vec3::{Color, Point3};
 
@@ -26,7 +26,7 @@ fn main() {
         Box::new(Sphere::new(
             Point3::new(0.0, 0.0, -1.0),
             0.5,
-            Box::new(Lambertian::new(Color::new(0.7, 0.3, 0.3))),
+            Box::new(Dielectric::new(1.5)),
         )),
         // Ground
         Box::new(Sphere::new(
@@ -44,7 +44,7 @@ fn main() {
         Box::new(Sphere::new(
             Point3::new(-1.0, 0.0, -1.0),
             0.5,
-            Box::new(Metallic::new(Color::new(0.8, 0.8, 0.8), 0.3)),
+            Box::new(Dielectric::new(1.5)),
         )),
     ];
 
