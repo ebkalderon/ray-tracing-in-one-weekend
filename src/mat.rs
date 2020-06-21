@@ -68,3 +68,35 @@ impl Material for SimpleDiffuse {
         })
     }
 }
+
+#[derive(Clone, Debug, PartialEq)]
+pub struct Metallic {
+    pub albedo: Color,
+}
+
+impl Metallic {
+    pub const fn new(albedo: Color) -> Self {
+        Metallic { albedo }
+    }
+}
+
+impl Default for Metallic {
+    fn default() -> Self {
+        Metallic::new(Color::new(0.8, 0.8, 0.8))
+    }
+}
+
+impl Material for Metallic {
+    fn scatter(&self, incoming: Ray, hit: &HitRecord) -> Option<Scatter> {
+        let reflected = incoming.direction.to_unit().reflect(hit.normal);
+        let scattered = Ray::new(hit.point, reflected);
+        if scattered.direction.dot(hit.normal) > 0.0 {
+            Some(Scatter {
+                ray: scattered,
+                attenuation: self.albedo,
+            })
+        } else {
+            None
+        }
+    }
+}
