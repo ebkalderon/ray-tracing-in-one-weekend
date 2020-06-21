@@ -2,9 +2,9 @@ use rand::{thread_rng, Rng};
 
 use camera::Camera;
 use geom::{Hittable, Sphere};
-use mat::Lambertian;
+use mat::{Lambertian, Scatter};
 use ray::Ray;
-use vec3::{Color, Point3, Vec3};
+use vec3::{Color, Point3};
 
 mod camera;
 mod geom;
@@ -60,14 +60,12 @@ fn compute_ray_color(ray: Ray, world: &[Box<dyn Hittable>], depth: u32) -> Color
     }
 
     if let Some(hit_record) = world.hit(ray, (0.001, std::f64::MAX)) {
-        let target = if cfg!(feature = "lambertian") {
-            hit_record.point + hit_record.normal + Vec3::random_unit()
+        if let Some(scatter) = hit_record.material.scatter(ray, &hit_record) {
+            let Scatter { ray, attenuation } = scatter;
+            return attenuation * compute_ray_color(ray, world, depth - 1);
         } else {
-            hit_record.point + Vec3::random_in_hemisphere(hit_record.normal)
-        };
-
-        let bounce_ray = Ray::new(hit_record.point, target - hit_record.point);
-        return 0.5 * compute_ray_color(bounce_ray, world, depth - 1);
+            return Color::zeros();
+        }
     }
 
     let unit_direction = ray.direction.to_unit();
