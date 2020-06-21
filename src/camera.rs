@@ -10,7 +10,14 @@ pub struct Camera {
 }
 
 impl Camera {
-    pub fn with_aspect(aspect_ratio: f64, viewport_height: f64, focal_length: f64) -> Self {
+    pub fn new(vertical_fov_deg: f64, aspect_ratio: f64) -> Self {
+        Camera::with_focal_length(vertical_fov_deg, aspect_ratio, 1.0)
+    }
+
+    pub fn with_focal_length(vertical_fov_deg: f64, aspect_ratio: f64, focal_length: f64) -> Self {
+        let theta = vertical_fov_deg.to_radians();
+        let h = (theta / 2.0).tan();
+        let viewport_height = 2.0 * h;
         let viewport_width = aspect_ratio * viewport_height;
 
         let origin = Point3::zeros();
@@ -37,6 +44,6 @@ impl Camera {
 
 impl Default for Camera {
     fn default() -> Self {
-        Camera::with_aspect(16.0 / 9.0, 2.0, 1.0)
+        Camera::new(90.0, 16.0 / 9.0)
     }
 }
