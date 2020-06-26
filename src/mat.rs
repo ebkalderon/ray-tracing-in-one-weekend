@@ -4,7 +4,7 @@ use crate::geom::HitRecord;
 use crate::ray::Ray;
 use crate::vec3::{Color, Vec3};
 
-pub trait Material: Debug {
+pub trait Material: Debug + Send + Sync {
     fn scatter(&self, incoming: Ray, hit: &HitRecord) -> Option<Scatter>;
 }
 

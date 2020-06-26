@@ -5,7 +5,7 @@ use crate::vec3::Color;
 const MAX_BOUNCE_DEPTH: u32 = 50;
 const SAMPLES_PER_PIXEL: u32 = 100;
 
-pub trait Sky {
+pub trait Sky: Send + Sync {
     fn color(&self, incoming: Ray) -> Color;
 }
 

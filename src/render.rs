@@ -1,4 +1,6 @@
-use indicatif::{ProgressBar, ProgressStyle};
+use indicatif::{ParallelProgressIterator, ProgressBar, ProgressStyle};
+use rand::Rng;
+use rayon::iter::{IndexedParallelIterator, IntoParallelIterator, ParallelIterator};
 
 use crate::camera::Camera;
 use crate::geom::Hittable;
@@ -8,30 +10,31 @@ use crate::scene::{Scene, Sky};
 use crate::vec3::Color;
 
 pub fn render<S: Sky>(scene: &Scene<S>, camera: &Camera, w: usize, h: usize) -> Vec<Color> {
-    let mut pixels = Vec::with_capacity(w * h);
-
     console::set_colors_enabled(true);
-    let progress = ProgressBar::new(h as u64).with_style(
+
+    let bar = ProgressBar::new(h as u64).with_style(
         ProgressStyle::default_bar()
             .template("Rendering: [{eta_precise}] {bar:40.cyan/blue} {pos:>7}/{len:} scanlines"),
     );
 
-    for j in (0..h).rev() {
-        for i in 0..w {
-            let mut pixel_color = Color::zeros();
-            for _ in 0..scene.samples_per_pixel {
-                let u = (i as f64 + rand::random::<f64>()) / (w - 1) as f64;
-                let v = (j as f64 + rand::random::<f64>()) / (h - 1) as f64;
-                let ray = camera.ray_at(u, v);
-                pixel_color += compute_ray_color(scene, ray, scene.max_bounce_depth);
-            }
-            pixels.push(pixel_color);
-        }
-        progress.inc(1);
-    }
-
-    progress.finish();
-    pixels
+    (0..h)
+        .into_par_iter()
+        .rev()
+        .progress_with(bar)
+        .flat_map(|j| {
+            (0..w).into_par_iter().map(move |i| {
+                (0..scene.samples_per_pixel)
+                    .into_par_iter()
+                    .map_init(rand::thread_rng, move |rng, _| {
+                        let u = (i as f64 + rng.gen::<f64>()) / (w - 1) as f64;
+                        let v = (j as f64 + rng.gen::<f64>()) / (h - 1) as f64;
+                        let ray = camera.ray_at(u, v);
+                        compute_ray_color(scene, ray, scene.max_bounce_depth)
+                    })
+                    .sum()
+            })
+        })
+        .collect()
 }
 
 fn compute_ray_color<S: Sky>(scene: &Scene<S>, ray: Ray, depth: u32) -> Color {
