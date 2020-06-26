@@ -10,6 +10,7 @@ mod camera;
 mod geom;
 mod mat;
 mod ray;
+mod render;
 mod scene;
 mod vec3;
 
