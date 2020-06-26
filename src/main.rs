@@ -1,9 +1,7 @@
-use rand::{thread_rng, Rng};
-
 use camera::Camera;
 use geom::{Hittable, Sphere};
-use mat::{Dielectric, Lambertian, Metallic, Scatter};
-use ray::Ray;
+use mat::{Dielectric, Lambertian, Metallic};
+use scene::Scene;
 use vec3::{Color, Point3, Vec3};
 
 mod camera;
@@ -15,10 +13,8 @@ mod scene;
 mod vec3;
 
 const ASPECT_RATIO: f64 = 16.0 / 9.0;
-const IMAGE_WIDTH: u32 = 384;
-const IMAGE_HEIGHT: u32 = (IMAGE_WIDTH as f64 / ASPECT_RATIO) as u32;
-const SAMPLES_PER_PIXEL: u32 = 100;
-const MAX_BOUNCE_DEPTH: u32 = 50;
+const IMAGE_WIDTH: usize = 384;
+const IMAGE_HEIGHT: usize = (IMAGE_WIDTH as f64 / ASPECT_RATIO) as usize;
 
 fn random_scene() -> Vec<Box<dyn Hittable>> {
     let mut world: Vec<Box<dyn Hittable>> = Vec::with_capacity(11 * 11);
@@ -81,7 +77,10 @@ fn random_scene() -> Vec<Box<dyn Hittable>> {
 fn main() {
     println!("P3\n{} {}\n255", IMAGE_WIDTH, IMAGE_HEIGHT);
 
-    let world = random_scene();
+    let scene = Scene {
+        world: random_scene(),
+        ..Default::default()
+    };
 
     let camera = {
         let up_vec = Vec3::new(0.0, 1.0, 0.0);
@@ -100,41 +99,9 @@ fn main() {
         )
     };
 
-    for j in (0..IMAGE_HEIGHT).rev() {
-        eprint!("\rScanlines remaining: {:0>3}", j);
-        for i in 0..IMAGE_WIDTH {
-            let mut pixel_color = Color::zeros();
-            for _ in 0..SAMPLES_PER_PIXEL {
-                let u = (i as f64 + thread_rng().gen_range(0.0, 1.0)) / (IMAGE_WIDTH - 1) as f64;
-                let v = (j as f64 + thread_rng().gen_range(0.0, 1.0)) / (IMAGE_HEIGHT - 1) as f64;
-                let ray = camera.ray_at(u, v);
-                pixel_color += compute_ray_color(ray, &world[..], MAX_BOUNCE_DEPTH);
-            }
-            print_color(pixel_color, SAMPLES_PER_PIXEL);
-        }
+    for pixel in render::render(&scene, &camera, IMAGE_WIDTH, IMAGE_HEIGHT) {
+        print_color(pixel, scene.samples_per_pixel);
     }
-
-    eprintln!("\nDone.");
-}
-
-fn compute_ray_color(ray: Ray, world: &[Box<dyn Hittable>], depth: u32) -> Color {
-    if depth <= 0 {
-        // If we've exceeded the ray bounce limit, no more light is gathered.
-        return Color::zeros();
-    }
-
-    if let Some(hit_record) = world.hit(ray, (0.001, std::f64::MAX)) {
-        if let Some(scatter) = hit_record.material.scatter(ray, &hit_record) {
-            let Scatter { ray, attenuation } = scatter;
-            return attenuation * compute_ray_color(ray, world, depth - 1);
-        } else {
-            return Color::zeros();
-        }
-    }
-
-    let unit_direction = ray.direction.to_unit();
-    let t = 0.5 * (unit_direction.y + 1.0);
-    (1.0 - t) * Color::ones() + t * Color::new(0.5, 0.7, 1.0)
 }
 
 fn print_color(pixel: Color, samples_per_pixel: u32) {
