@@ -49,6 +49,7 @@ impl Sky for SolidSky {
     }
 }
 
+#[derive(Debug)]
 pub struct Scene<S: Sky> {
     pub world: Vec<Box<dyn Hittable>>,
     pub sky: S,

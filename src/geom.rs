@@ -1,16 +1,18 @@
 pub use self::sphere::Sphere;
 
+use std::fmt::Debug;
+
 use crate::mat::Material;
 use crate::ray::Ray;
 use crate::vec3::{Point3, Vec3};
 
 mod sphere;
 
-pub trait Hittable: Send + Sync {
+pub trait Hittable: Debug + Send + Sync {
     fn hit(&self, ray: Ray, t_range: (f64, f64)) -> Option<HitRecord>;
 }
 
-impl<T: AsRef<[Box<dyn Hittable>]> + Send + Sync> Hittable for T {
+impl<T: AsRef<[Box<dyn Hittable>]> + Debug + Send + Sync> Hittable for T {
     fn hit(&self, ray: Ray, (t_min, t_max): (f64, f64)) -> Option<HitRecord> {
         let mut closest_so_far: Option<HitRecord> = None;
 
