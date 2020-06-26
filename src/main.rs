@@ -10,6 +10,7 @@ mod camera;
 mod geom;
 mod mat;
 mod ray;
+mod scene;
 mod vec3;
 
 const ASPECT_RATIO: f64 = 16.0 / 9.0;
