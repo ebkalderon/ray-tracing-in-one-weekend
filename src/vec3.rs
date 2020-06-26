@@ -28,7 +28,8 @@ impl Vec3 {
     }
 
     pub fn random() -> Self {
-        Vec3::new(rand::random(), rand::random(), rand::random())
+        let mut rng = rand::thread_rng();
+        Vec3::new(rng.gen(), rng.gen(), rng.gen())
     }
 
     pub fn random_in_range(min: f64, max: f64) -> Self {
