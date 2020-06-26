@@ -1,5 +1,3 @@
-use rand::{thread_rng, Rng};
-
 use crate::camera::Camera;
 use crate::geom::Hittable;
 use crate::mat::Scatter;
@@ -15,8 +13,8 @@ pub fn render<S: Sky>(scene: &Scene<S>, camera: &Camera, w: usize, h: usize) -> 
         for i in 0..w {
             let mut pixel_color = Color::zeros();
             for _ in 0..scene.samples_per_pixel {
-                let u = (i as f64 + thread_rng().gen_range(0.0, 1.0)) / (w - 1) as f64;
-                let v = (j as f64 + thread_rng().gen_range(0.0, 1.0)) / (h - 1) as f64;
+                let u = (i as f64 + rand::random::<f64>()) / (w - 1) as f64;
+                let v = (j as f64 + rand::random::<f64>()) / (h - 1) as f64;
                 let ray = camera.ray_at(u, v);
                 pixel_color += compute_ray_color(scene, ray, scene.max_bounce_depth);
             }
