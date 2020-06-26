@@ -1,4 +1,5 @@
 use std::fmt::{self, Display, Formatter};
+use std::iter::Sum;
 use std::ops::{Add, AddAssign, Div, DivAssign, Index, IndexMut, Mul, MulAssign, Neg, Sub};
 
 use rand::Rng;
@@ -247,6 +248,12 @@ impl Neg for Vec3 {
     }
 }
 
+impl Sum for Vec3 {
+    fn sum<I: Iterator<Item = Self>>(iter: I) -> Self {
+        iter.fold(Vec3::zeros(), Add::add)
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -300,5 +307,14 @@ mod tests {
         assert_eq!(foo[0], foo.x);
         assert_eq!(foo[1], foo.y);
         assert_eq!(foo[2], foo.z);
+    }
+
+    #[test]
+    fn summing() {
+        let sum: Vec3 = vec![Vec3::new(0.0, 1.0, 2.0), Vec3::new(2.0, 1.0, 0.0)]
+            .into_iter()
+            .sum();
+
+        assert_eq!(sum, Vec3::new(2.0, 2.0, 2.0));
     }
 }
