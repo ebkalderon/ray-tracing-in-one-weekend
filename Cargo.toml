@@ -1,6 +1,6 @@
 [package]
 name = "ray-tracing-in-one-weekend"
-version = "0.1.0"
+version = "0.1.1"
 authors = ["Eyal Kalderon <ebkalderon@gmail.com>"]
 edition = "2018"
 

@@ -220,7 +220,7 @@ dependencies = [
 
 [[package]]
 name = "ray-tracing-in-one-weekend"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "console",
  "float_eq",
