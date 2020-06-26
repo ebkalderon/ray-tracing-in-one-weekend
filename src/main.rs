@@ -17,7 +17,7 @@ const IMAGE_WIDTH: usize = 384;
 const IMAGE_HEIGHT: usize = (IMAGE_WIDTH as f64 / ASPECT_RATIO) as usize;
 
 fn random_scene() -> Vec<Box<dyn Hittable>> {
-    let mut world: Vec<Box<dyn Hittable>> = Vec::with_capacity(11 * 11);
+    let mut world: Vec<Box<dyn Hittable>> = Vec::with_capacity(22 * 22 + 4);
 
     world.push(Box::new(Sphere::new(
         Point3::new(0.0, -1000.0, 0.0),
