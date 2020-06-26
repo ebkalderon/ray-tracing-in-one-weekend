@@ -1,3 +1,5 @@
+use indicatif::{ProgressBar, ProgressStyle};
+
 use crate::camera::Camera;
 use crate::geom::Hittable;
 use crate::mat::Scatter;
@@ -8,8 +10,13 @@ use crate::vec3::Color;
 pub fn render<S: Sky>(scene: &Scene<S>, camera: &Camera, w: usize, h: usize) -> Vec<Color> {
     let mut pixels = Vec::with_capacity(w * h);
 
+    console::set_colors_enabled(true);
+    let progress = ProgressBar::new(h as u64).with_style(
+        ProgressStyle::default_bar()
+            .template("Rendering: [{eta_precise}] {bar:40.cyan/blue} {pos:>7}/{len:} scanlines"),
+    );
+
     for j in (0..h).rev() {
-        eprint!("\rScanlines remaining: {:0>3}", j);
         for i in 0..w {
             let mut pixel_color = Color::zeros();
             for _ in 0..scene.samples_per_pixel {
@@ -20,9 +27,10 @@ pub fn render<S: Sky>(scene: &Scene<S>, camera: &Camera, w: usize, h: usize) -> 
             }
             pixels.push(pixel_color);
         }
+        progress.inc(1);
     }
 
-    eprintln!("\nDone.");
+    progress.finish();
     pixels
 }
 
