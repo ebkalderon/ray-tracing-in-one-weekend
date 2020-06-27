@@ -2,6 +2,7 @@ pub use self::sphere::{MovingSphere, Sphere};
 
 use std::fmt::Debug;
 
+use crate::aabb::{self, Aabb};
 use crate::mat::Material;
 use crate::ray::Ray;
 use crate::vec3::{Point3, Vec3};
@@ -10,6 +11,7 @@ mod sphere;
 
 pub trait Hittable: Debug + Send + Sync {
     fn hit(&self, ray: &Ray, t_range: (f64, f64)) -> Option<HitRecord>;
+    fn bounding_box(&self, time0: f64, time1: f64) -> Option<Aabb>;
 }
 
 impl<T: AsRef<[Box<dyn Hittable>]> + Debug + Send + Sync> Hittable for T {
@@ -25,6 +27,26 @@ impl<T: AsRef<[Box<dyn Hittable>]> + Debug + Send + Sync> Hittable for T {
         }
 
         closest_so_far
+    }
+
+    fn bounding_box(&self, time0: f64, time1: f64) -> Option<Aabb> {
+        if self.as_ref().is_empty() {
+            return None;
+        }
+
+        let mut output_box = self
+            .as_ref()
+            .first()
+            .and_then(|obj| obj.bounding_box(time0, time1))?;
+
+        for object in self.as_ref().iter() {
+            match object.bounding_box(time0, time1) {
+                Some(b) => output_box = aabb::surrounding_box(output_box, b),
+                None => return None,
+            }
+        }
+
+        Some(output_box)
     }
 }
 
