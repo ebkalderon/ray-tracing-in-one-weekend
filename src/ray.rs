@@ -8,6 +8,7 @@ pub struct Ray {
 }
 
 impl Ray {
+    #[allow(unused)]
     #[inline]
     pub const fn new(origin: Point3, direction: Vec3) -> Self {
         Ray::with_time(origin, direction, 0.0)
