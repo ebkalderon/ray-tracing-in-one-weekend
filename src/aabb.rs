@@ -12,15 +12,19 @@ impl Aabb {
         Aabb { min, max }
     }
 
+    #[inline]
     pub fn hit(&self, ray: &Ray, (mut t_min, mut t_max): (f64, f64)) -> bool {
         for a in 0..3 {
-            let time0 = ((self.min[a] - ray.origin[a]) / ray.direction[a])
-                .min((self.max[a] - ray.origin[a]) / ray.direction[a]);
-            let time1 = ((self.min[a] - ray.origin[a]) / ray.direction[a])
-                .max((self.max[a] - ray.origin[a]) / ray.direction[a]);
+            let inv_d = 1.0 / ray.direction[a];
+            let mut time0 = (self.min[a] - ray.origin[a]) * inv_d;
+            let mut time1 = (self.max[a] - ray.origin[a]) * inv_d;
 
-            t_min = time0.max(t_min);
-            t_max = time1.min(t_max);
+            if inv_d < 0.0 {
+                std::mem::swap(&mut time0, &mut time1);
+            }
+
+            t_min = if time0 > t_min { time0 } else { t_min };
+            t_max = if time1 < t_max { time1 } else { t_max };
 
             if t_max <= t_min {
                 return false;
