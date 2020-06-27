@@ -1,4 +1,4 @@
-pub use self::sphere::Sphere;
+pub use self::sphere::{MovingSphere, Sphere};
 
 use std::fmt::Debug;
 
