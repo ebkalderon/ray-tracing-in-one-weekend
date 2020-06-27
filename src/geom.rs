@@ -89,12 +89,12 @@ mod tests {
             Box::new(Sphere::new(
                 Point3::new(0.0, 0.0, -1.0),
                 0.5,
-                Box::new(Lambertian::default()),
+                Lambertian::default(),
             )),
             Box::new(Sphere::new(
                 Point3::new(0.0, -100.5, -1.0),
                 100.0,
-                Box::new(Lambertian::default()),
+                Lambertian::default(),
             )),
         ]
     }

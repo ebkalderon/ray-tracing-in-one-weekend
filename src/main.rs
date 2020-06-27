@@ -22,7 +22,7 @@ fn random_scene() -> Vec<Box<dyn Hittable>> {
     world.push(Box::new(Sphere::new(
         Point3::new(0.0, -1000.0, 0.0),
         1000.0,
-        Box::new(Lambertian::new(Color::new(0.5, 0.5, 0.5))),
+        Lambertian::new(Color::new(0.5, 0.5, 0.5)),
     )));
 
     for a in -11..11 {
@@ -38,15 +38,15 @@ fn random_scene() -> Vec<Box<dyn Hittable>> {
                 if choose_material < 0.8 {
                     let albedo = Color::random() * Color::random();
                     let material = Lambertian::new(albedo);
-                    world.push(Box::new(Sphere::new(center, 0.2, Box::new(material))));
+                    world.push(Box::new(Sphere::new(center, 0.2, material)));
                 } else if choose_material < 0.95 {
                     let albedo = Color::random() * Color::random();
                     let fuzz = rand::random();
                     let material = Metallic::new(albedo, fuzz);
-                    world.push(Box::new(Sphere::new(center, 0.2, Box::new(material))));
+                    world.push(Box::new(Sphere::new(center, 0.2, material)));
                 } else {
                     let material = Dielectric::new(1.5);
-                    world.push(Box::new(Sphere::new(center, 0.2, Box::new(material))));
+                    world.push(Box::new(Sphere::new(center, 0.2, material)));
                 }
             }
         }
@@ -56,17 +56,17 @@ fn random_scene() -> Vec<Box<dyn Hittable>> {
         Box::new(Sphere::new(
             Point3::new(0.0, 1.0, 0.0),
             1.0,
-            Box::new(Dielectric::new(1.5)),
+            Dielectric::new(1.5),
         )),
         Box::new(Sphere::new(
             Point3::new(-4.0, 1.0, 0.0),
             1.0,
-            Box::new(Lambertian::new(Color::new(0.4, 0.2, 0.1))),
+            Lambertian::new(Color::new(0.4, 0.2, 0.1)),
         )),
         Box::new(Sphere::new(
             Point3::new(4.0, 1.0, 0.0),
             1.0,
-            Box::new(Metallic::new(Color::new(0.7, 0.6, 0.5), 0.0)),
+            Metallic::new(Color::new(0.7, 0.6, 0.5), 0.0),
         )),
     ];
 
