@@ -8,6 +8,7 @@ use mat::{Dielectric, Lambertian, Metallic};
 use scene::Scene;
 use vec3::{Color, Point3, Vec3};
 
+mod aabb;
 mod camera;
 mod geom;
 mod mat;
