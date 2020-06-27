@@ -32,10 +32,10 @@ impl Default for Lambertian {
 }
 
 impl Material for Lambertian {
-    fn scatter(&self, _incoming: &Ray, hit: &HitRecord) -> Option<Scatter> {
+    fn scatter(&self, incoming: &Ray, hit: &HitRecord) -> Option<Scatter> {
         let scatter_direction = hit.normal + Vec3::random_unit();
         Some(Scatter {
-            ray: Ray::new(hit.point, scatter_direction),
+            ray: Ray::with_time(hit.point, scatter_direction, incoming.time),
             attenuation: self.albedo,
         })
     }
@@ -60,10 +60,10 @@ impl Default for SimpleDiffuse {
 }
 
 impl Material for SimpleDiffuse {
-    fn scatter(&self, _incoming: &Ray, hit: &HitRecord) -> Option<Scatter> {
+    fn scatter(&self, incoming: &Ray, hit: &HitRecord) -> Option<Scatter> {
         let scatter_direction = Vec3::random_in_hemisphere(hit.normal);
         Some(Scatter {
-            ray: Ray::new(hit.point, scatter_direction),
+            ray: Ray::with_time(hit.point, scatter_direction, incoming.time),
             attenuation: self.albedo,
         })
     }
@@ -93,9 +93,10 @@ impl Default for Metallic {
 impl Material for Metallic {
     fn scatter(&self, incoming: &Ray, hit: &HitRecord) -> Option<Scatter> {
         let reflected = incoming.direction.to_unit().reflect(hit.normal);
-        let scattered = Ray::new(
+        let scattered = Ray::with_time(
             hit.point,
             reflected + self.fuzz * Vec3::random_in_unit_sphere(),
+            incoming.time,
         );
         if scattered.direction.dot(hit.normal) > 0.0 {
             Some(Scatter {
@@ -134,13 +135,13 @@ impl Material for Dielectric {
 
             if etai_over_etat * sin_theta > 1.0 {
                 let reflected = unit_direction.reflect(hit.normal);
-                Ray::new(hit.point, reflected)
+                Ray::with_time(hit.point, reflected, incoming.time)
             } else if rand::random::<f64>() < schlick(cos_theta, etai_over_etat) {
                 let reflected = unit_direction.reflect(hit.normal);
-                Ray::new(hit.point, reflected)
+                Ray::with_time(hit.point, reflected, incoming.time)
             } else {
                 let refracted = unit_direction.refract(hit.normal, etai_over_etat);
-                Ray::new(hit.point, refracted)
+                Ray::with_time(hit.point, refracted, incoming.time)
             }
         };
 
