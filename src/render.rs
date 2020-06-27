@@ -1,5 +1,5 @@
 use indicatif::{ParallelProgressIterator, ProgressBar, ProgressStyle};
-use rand::Rng;
+use rand::{rngs::ThreadRng, Rng};
 use rayon::iter::{IndexedParallelIterator, IntoParallelIterator, ParallelIterator};
 
 use crate::camera::Camera;
@@ -8,6 +8,8 @@ use crate::mat::Scatter;
 use crate::ray::Ray;
 use crate::scene::{Scene, Sky};
 use crate::vec3::Color;
+
+const MAX_SEQUENTIAL: u32 = 350;
 
 pub fn render<S: Sky>(scene: &Scene<S>, camera: &Camera, w: usize, h: usize) -> Vec<Color> {
     console::set_colors_enabled(true);
@@ -23,15 +25,24 @@ pub fn render<S: Sky>(scene: &Scene<S>, camera: &Camera, w: usize, h: usize) -> 
         .progress_with(bar)
         .flat_map(|j| {
             (0..w).into_par_iter().map(move |i| {
-                (0..scene.samples_per_pixel)
-                    .into_par_iter()
-                    .map_init(rand::thread_rng, move |rng, _| {
-                        let u = (i as f64 + rng.gen::<f64>()) / (w - 1) as f64;
-                        let v = (j as f64 + rng.gen::<f64>()) / (h - 1) as f64;
-                        let ray = camera.ray_at(u, v);
-                        compute_ray_color(scene, ray, scene.max_bounce_depth)
-                    })
-                    .sum()
+                let collect_sample = move |rng: &mut ThreadRng| {
+                    let u = (i as f64 + rng.gen::<f64>()) / (w - 1) as f64;
+                    let v = (j as f64 + rng.gen::<f64>()) / (h - 1) as f64;
+                    let ray = camera.ray_at(u, v);
+                    compute_ray_color(scene, ray, scene.max_bounce_depth)
+                };
+
+                if scene.samples_per_pixel < MAX_SEQUENTIAL {
+                    let mut rng = rand::thread_rng();
+                    (0..scene.samples_per_pixel)
+                        .map(move |_| collect_sample(&mut rng))
+                        .sum()
+                } else {
+                    (0..scene.samples_per_pixel)
+                        .into_par_iter()
+                        .map_init(rand::thread_rng, move |rng, _| collect_sample(rng))
+                        .sum()
+                }
             })
         })
         .collect()
