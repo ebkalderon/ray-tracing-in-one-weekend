@@ -1,5 +1,7 @@
+use rand::Rng;
+
 use camera::Camera;
-use geom::{Hittable, Sphere};
+use geom::{Hittable, MovingSphere, Sphere};
 use mat::{Dielectric, Lambertian, Metallic};
 use scene::Scene;
 use vec3::{Color, Point3, Vec3};
@@ -25,23 +27,30 @@ fn random_scene() -> Vec<Box<dyn Hittable>> {
         Lambertian::new(Color::new(0.5, 0.5, 0.5)),
     )));
 
+    let mut rng = rand::thread_rng();
     for a in -11..11 {
         for b in -11..11 {
-            let choose_material: f64 = rand::random();
+            let choose_material: f64 = rng.gen();
             let center = Point3::new(
-                a as f64 + 0.9 * rand::random::<f64>(),
+                a as f64 + 0.9 * rng.gen::<f64>(),
                 0.2,
-                b as f64 + 0.9 * rand::random::<f64>(),
+                b as f64 + 0.9 * rng.gen::<f64>(),
             );
 
             if (center - Point3::new(4.0, 0.2, 0.0)).len() > 0.9 {
                 if choose_material < 0.8 {
                     let albedo = Color::random() * Color::random();
                     let material = Lambertian::new(albedo);
-                    world.push(Box::new(Sphere::new(center, 0.2, material)));
+                    let center2 = center + Vec3::new(0.0, rng.gen_range(0.0, 0.5), 0.0);
+                    world.push(Box::new(MovingSphere::new(
+                        (center, center2),
+                        (0.0, 1.0),
+                        0.2,
+                        material,
+                    )));
                 } else if choose_material < 0.95 {
                     let albedo = Color::random() * Color::random();
-                    let fuzz = rand::random();
+                    let fuzz = rng.gen();
                     let material = Metallic::new(albedo, fuzz);
                     world.push(Box::new(Sphere::new(center, 0.2, material)));
                 } else {
@@ -88,6 +97,8 @@ fn main() {
         let look_at = Point3::zeros();
         let aperture = 0.1;
         let focus_dist = 10.0;
+        let shutter_open = 0.0;
+        let shutter_closed = 1.0;
         Camera::new(
             up_vec,
             look_from,
@@ -96,6 +107,8 @@ fn main() {
             ASPECT_RATIO,
             aperture,
             focus_dist,
+            shutter_open,
+            shutter_closed,
         )
     };
 
