@@ -1,3 +1,5 @@
+use std::time::Duration;
+
 use rand::Rng;
 
 use crate::ray::Ray;
@@ -13,8 +15,7 @@ pub struct Camera {
     pub v: Vec3,
     pub w: Vec3,
     pub lens_radius: f64,
-    pub shutter_open: f64,
-    pub shutter_closed: f64,
+    pub shutter_duration: Duration,
 }
 
 impl Camera {
@@ -26,8 +27,7 @@ impl Camera {
         aspect_ratio: f64,
         aperture: f64,
         focus_dist: f64,
-        shutter_open: f64,
-        shutter_closed: f64,
+        shutter_duration: Duration,
     ) -> Self {
         let theta = vertical_fov_deg.to_radians();
         let h = (theta / 2.0).tan();
@@ -51,8 +51,7 @@ impl Camera {
             w,
             lower_left_corner: origin - horizontal / 2.0 - vertical / 2.0 - focus_dist * w,
             lens_radius: aperture / 2.0,
-            shutter_open,
-            shutter_closed,
+            shutter_duration,
         }
     }
 
@@ -60,7 +59,11 @@ impl Camera {
         let (s, t) = (screen_x, screen_y);
         let rd = self.lens_radius * Vec3::random_in_unit_disk();
         let offset = self.u * rd.x + self.v * rd.y;
-        let emission_time = rand::thread_rng().gen_range(self.shutter_open, self.shutter_closed);
+        let emission_time = {
+            let shutter_open = 0.0;
+            let shutter_closed = self.shutter_duration.as_secs_f64();
+            rand::thread_rng().gen_range(shutter_open, shutter_closed)
+        };
 
         Ray::with_time(
             self.origin + offset,
@@ -82,8 +85,7 @@ impl Default for Camera {
             16.0 / 9.0,
             2.0,
             (look_from - look_at).len(),
-            0.0,
-            0.0,
+            Duration::from_secs(0),
         )
     }
 }

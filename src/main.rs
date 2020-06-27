@@ -1,3 +1,5 @@
+use std::time::Duration;
+
 use rand::Rng;
 
 use camera::Camera;
@@ -97,8 +99,7 @@ fn main() {
         let look_at = Point3::zeros();
         let aperture = 0.1;
         let focus_dist = 10.0;
-        let shutter_open = 0.0;
-        let shutter_closed = 1.0;
+        let shutter_duration = Duration::from_secs(1);
         Camera::new(
             up_vec,
             look_from,
@@ -107,8 +108,7 @@ fn main() {
             ASPECT_RATIO,
             aperture,
             focus_dist,
-            shutter_open,
-            shutter_closed,
+            shutter_duration,
         )
     };
 
