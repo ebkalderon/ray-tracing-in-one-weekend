@@ -34,3 +34,18 @@ impl Aabb {
         true
     }
 }
+
+#[inline]
+pub fn surrounding_box(first: Aabb, second: Aabb) -> Aabb {
+    let small = Point3::new(
+        first.min.x.min(second.min.x),
+        first.min.y.min(second.min.y),
+        first.min.z.min(second.min.z),
+    );
+    let large = Point3::new(
+        first.max.x.max(second.max.x),
+        first.max.y.max(second.max.y),
+        first.max.z.max(second.max.z),
+    );
+    Aabb::new(small, large)
+}
