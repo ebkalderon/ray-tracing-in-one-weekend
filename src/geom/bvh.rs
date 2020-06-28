@@ -1,6 +1,14 @@
+use std::cmp::Ordering;
+
+use anyhow::format_err;
+use rand::Rng;
+use rayon::slice::ParallelSliceMut;
+
 use super::{HitRecord, Hittable};
-use crate::aabb::Aabb;
+use crate::aabb::{self, Aabb};
 use crate::ray::Ray;
+
+const MAX_SEQUENTIAL: usize = 250;
 
 #[derive(Debug)]
 enum Node {
@@ -15,8 +23,54 @@ pub struct Bvh {
 }
 
 impl Bvh {
-    pub fn new(world: Vec<Box<dyn Hittable>>, time0: f64, time1: f64) -> Self {
-        unimplemented!()
+    pub fn new(mut world: Vec<Box<dyn Hittable>>, time0: f64, time1: f64) -> anyhow::Result<Self> {
+        #[inline]
+        fn box_compare(axis: usize) -> impl Fn(&Box<dyn Hittable>, &Box<dyn Hittable>) -> Ordering {
+            move |left, right| match (left.bounding_box(0.0, 0.0), right.bounding_box(0.0, 0.0)) {
+                (Some(left), Some(right)) => left.min[axis].partial_cmp(&right.min[axis]).unwrap(),
+                _ => panic!("No bounding box in Bvh::new() constructor"),
+            }
+        }
+
+        let axis = rand::thread_rng().gen_range(0, 3);
+        world.par_sort_unstable_by(box_compare(axis));
+
+        match world.len() {
+            0 => Err(format_err!("Scene cannot be empty")),
+            1 => {
+                let leaf = world.remove(0);
+                let bounding_box = leaf
+                    .bounding_box(time0, time1)
+                    .ok_or_else(|| format_err!("Element is missing bounding box"))?;
+
+                Ok(Bvh {
+                    bounding_box,
+                    tree: Node::Leaf(leaf),
+                })
+            }
+            len => {
+                let half = world.drain(len / 2..).collect();
+                let (right, left) = if len < MAX_SEQUENTIAL {
+                    let right = Bvh::new(half, time0, time1)?;
+                    let left = Bvh::new(world, time0, time1)?;
+                    (right, left)
+                } else {
+                    let (right, left) = rayon::join(
+                        || Bvh::new(half, time0, time1),
+                        || Bvh::new(world, time0, time1),
+                    );
+                    (right?, left?)
+                };
+
+                Ok(Bvh {
+                    bounding_box: aabb::surrounding_box(left.bounding_box, right.bounding_box),
+                    tree: Node::Branch {
+                        left: Box::new(left),
+                        right: Box::new(right),
+                    },
+                })
+            }
+        }
     }
 }
 
