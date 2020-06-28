@@ -1,10 +1,8 @@
 use std::time::Duration;
 
-use rand::Rng;
-
 use camera::Camera;
-use geom::{Bvh, Hittable, MovingSphere, Sphere};
-use mat::{CheckeredTexture, Dielectric, Lambertian, Metallic};
+use geom::{Hittable, Sphere};
+use mat::{CheckeredTexture, Lambertian};
 use scene::Scene;
 use vec3::{Color, Point3, Vec3};
 
@@ -21,80 +19,27 @@ const ASPECT_RATIO: f64 = 16.0 / 9.0;
 const IMAGE_WIDTH: usize = 384;
 const IMAGE_HEIGHT: usize = (IMAGE_WIDTH as f64 / ASPECT_RATIO) as usize;
 
-fn random_scene() -> Vec<Box<dyn Hittable>> {
-    let mut world: Vec<Box<dyn Hittable>> = Vec::with_capacity(22 * 22 + 4);
-
-    world.push(Box::new(Sphere::new(
-        Point3::new(0.0, -1000.0, 0.0),
-        1000.0,
-        Lambertian::new(CheckeredTexture::new(
-            Color::new(0.2, 0.3, 0.1),
-            Color::new(0.9, 0.9, 0.9),
-        )),
-    )));
-
-    let mut rng = rand::thread_rng();
-    for a in -11..11 {
-        for b in -11..11 {
-            let choose_material: f64 = rng.gen();
-            let center = Point3::new(
-                a as f64 + 0.9 * rng.gen::<f64>(),
-                0.2,
-                b as f64 + 0.9 * rng.gen::<f64>(),
-            );
-
-            if (center - Point3::new(4.0, 0.2, 0.0)).len() > 0.9 {
-                if choose_material < 0.8 {
-                    let albedo = Color::random() * Color::random();
-                    let material = Lambertian::new(albedo);
-                    let center2 = center + Vec3::new(0.0, rng.gen_range(0.0, 0.5), 0.0);
-                    world.push(Box::new(MovingSphere::new(
-                        (center, center2),
-                        (0.0, 1.0),
-                        0.2,
-                        material,
-                    )));
-                } else if choose_material < 0.95 {
-                    let albedo = Color::random() * Color::random();
-                    let fuzz = rng.gen();
-                    let material = Metallic::new(albedo, fuzz);
-                    world.push(Box::new(Sphere::new(center, 0.2, material)));
-                } else {
-                    let material = Dielectric::new(1.5);
-                    world.push(Box::new(Sphere::new(center, 0.2, material)));
-                }
-            }
-        }
-    }
-
-    let large_spheres: Vec<Box<dyn Hittable>> = vec![
+fn two_spheres() -> Vec<Box<dyn Hittable>> {
+    let checker = CheckeredTexture::new(Color::new(0.2, 0.3, 0.1), Color::new(0.9, 0.9, 0.9));
+    vec![
         Box::new(Sphere::new(
-            Point3::new(0.0, 1.0, 0.0),
-            1.0,
-            Dielectric::new(1.5),
+            Point3::new(0.0, -10.0, 0.0),
+            10.0,
+            Lambertian::new(checker),
         )),
         Box::new(Sphere::new(
-            Point3::new(-4.0, 1.0, 0.0),
-            1.0,
-            Lambertian::new(Color::new(0.4, 0.2, 0.1)),
+            Point3::new(0.0, 10.0, 0.0),
+            10.0,
+            Lambertian::new(checker),
         )),
-        Box::new(Sphere::new(
-            Point3::new(4.0, 1.0, 0.0),
-            1.0,
-            Metallic::new(Color::new(0.7, 0.6, 0.5), 0.0),
-        )),
-    ];
-
-    world.extend(large_spheres);
-    world
+    ]
 }
 
 fn main() {
     println!("P3\n{} {}\n255", IMAGE_WIDTH, IMAGE_HEIGHT);
 
-    let bvh = Bvh::new(random_scene(), 0.0, 1.0).expect("Failed to build BVH");
     let scene = Scene {
-        world: vec![Box::new(bvh)],
+        world: two_spheres(),
         ..Default::default()
     };
 
@@ -102,7 +47,7 @@ fn main() {
         let up_vec = Vec3::new(0.0, 1.0, 0.0);
         let look_from = Point3::new(13.0, 2.0, 3.0);
         let look_at = Point3::zeros();
-        let aperture = 0.1;
+        let aperture = 0.0;
         let focus_dist = 10.0;
         let shutter_duration = Duration::from_secs(1);
         Camera::new(
