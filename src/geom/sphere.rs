@@ -37,11 +37,14 @@ impl<M: Material> Hittable for Sphere<M> {
             if t < t_max && t > t_min {
                 let point = ray.point_at(t);
                 let outward_normal = (point - self.center) / self.radius;
+                let (u_coord, v_coord) = compute_sphere_uv(point - self.center);
                 return Some(HitRecord::with_face_normal(
                     *ray,
                     point,
                     outward_normal,
                     &self.material,
+                    u_coord,
+                    v_coord,
                     t,
                 ));
             }
@@ -50,11 +53,14 @@ impl<M: Material> Hittable for Sphere<M> {
             if t < t_max && t > t_min {
                 let point = ray.point_at(t);
                 let outward_normal = (point - self.center) / self.radius;
+                let (u_coord, v_coord) = compute_sphere_uv(point - self.center);
                 return Some(HitRecord::with_face_normal(
                     *ray,
                     point,
                     outward_normal,
                     &self.material,
+                    u_coord,
+                    v_coord,
                     t,
                 ));
             }
@@ -111,11 +117,14 @@ impl<M: Material> Hittable for MovingSphere<M> {
             if t < t_max && t > t_min {
                 let point = ray.point_at(t);
                 let outward_normal = (point - self.center_at(ray.time)) / self.radius;
+                let (u_coord, v_coord) = compute_sphere_uv(point - self.center_at(ray.time));
                 return Some(HitRecord::with_face_normal(
                     *ray,
                     point,
                     outward_normal,
                     &self.material,
+                    u_coord,
+                    v_coord,
                     t,
                 ));
             }
@@ -124,11 +133,14 @@ impl<M: Material> Hittable for MovingSphere<M> {
             if t < t_max && t > t_min {
                 let point = ray.point_at(t);
                 let outward_normal = (point - self.center_at(ray.time)) / self.radius;
+                let (u_coord, v_coord) = compute_sphere_uv(point - self.center_at(ray.time));
                 return Some(HitRecord::with_face_normal(
                     *ray,
                     point,
                     outward_normal,
                     &self.material,
+                    u_coord,
+                    v_coord,
                     t,
                 ));
             }
@@ -149,4 +161,12 @@ impl<M: Material> Hittable for MovingSphere<M> {
 
         Some(aabb::surrounding_box(box0, box1))
     }
+}
+
+fn compute_sphere_uv(p: Vec3) -> (f64, f64) {
+    let phi = p.z.atan2(p.x);
+    let theta = p.y.asin();
+    let u = 1.0 - (phi + std::f64::consts::PI) / (2.0 * std::f64::consts::PI);
+    let v = (theta + std::f64::consts::PI / 2.0) / std::f64::consts::PI;
+    (u, v)
 }
