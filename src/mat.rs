@@ -1,8 +1,12 @@
+pub use self::texture::Texture;
+
 use std::fmt::Debug;
 
 use crate::geom::HitRecord;
 use crate::ray::Ray;
 use crate::vec3::{Color, Vec3};
+
+mod texture;
 
 pub trait Material: Debug + Send + Sync {
     fn scatter(&self, incoming: &Ray, hit: &HitRecord) -> Option<Scatter>;
