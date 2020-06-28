@@ -57,6 +57,8 @@ pub struct HitRecord<'a> {
     pub point: Point3,
     pub normal: Vec3,
     pub material: &'a dyn Material,
+    pub texture_u: f64,
+    pub texture_v: f64,
     pub t: f64,
     pub is_front_face: bool,
 }
@@ -67,6 +69,8 @@ impl<'a> HitRecord<'a> {
         point: Point3,
         normal: Vec3,
         material: &'a dyn Material,
+        texture_u: f64,
+        texture_v: f64,
         t: f64,
         is_front_face: bool,
     ) -> Self {
@@ -74,6 +78,8 @@ impl<'a> HitRecord<'a> {
             point,
             normal,
             material,
+            texture_u,
+            texture_v,
             t,
             is_front_face,
         }
@@ -85,6 +91,8 @@ impl<'a> HitRecord<'a> {
         point: Point3,
         outward_normal: Vec3,
         material: &'a dyn Material,
+        texture_u: f64,
+        texture_v: f64,
         t: f64,
     ) -> Self {
         let is_front_face = ray.direction.dot(outward_normal) < 0.0;
@@ -94,7 +102,15 @@ impl<'a> HitRecord<'a> {
             -outward_normal
         };
 
-        HitRecord::new(point, normal, material, t, is_front_face)
+        HitRecord::new(
+            point,
+            normal,
+            material,
+            texture_u,
+            texture_v,
+            t,
+            is_front_face,
+        )
     }
 }
 
