@@ -19,56 +19,56 @@ pub struct Scatter {
 }
 
 #[derive(Clone, Debug, PartialEq)]
-pub struct Lambertian {
-    pub albedo: Color,
+pub struct Lambertian<T: Texture> {
+    pub albedo: T,
 }
 
-impl Lambertian {
-    pub const fn new(albedo: Color) -> Self {
+impl<T: Texture> Lambertian<T> {
+    pub fn new(albedo: T) -> Self {
         Lambertian { albedo }
     }
 }
 
-impl Default for Lambertian {
+impl Default for Lambertian<Color> {
     fn default() -> Self {
         Lambertian::new(Color::new(0.5, 0.5, 0.5))
     }
 }
 
-impl Material for Lambertian {
+impl<T: Texture> Material for Lambertian<T> {
     fn scatter(&self, incoming: &Ray, hit: &HitRecord) -> Option<Scatter> {
         let scatter_direction = hit.normal + Vec3::random_unit();
         Some(Scatter {
             ray: Ray::with_time(hit.point, scatter_direction, incoming.time),
-            attenuation: self.albedo,
+            attenuation: self.albedo.value(hit.texture_u, hit.texture_v, hit.point),
         })
     }
 }
 
 /// Implements the simpler hemispherical scattering method.
 #[derive(Clone, Debug, PartialEq)]
-pub struct SimpleDiffuse {
-    pub albedo: Color,
+pub struct SimpleDiffuse<T: Texture> {
+    pub albedo: T,
 }
 
-impl SimpleDiffuse {
-    pub const fn new(albedo: Color) -> Self {
+impl<T: Texture> SimpleDiffuse<T> {
+    pub fn new(albedo: T) -> Self {
         SimpleDiffuse { albedo }
     }
 }
 
-impl Default for SimpleDiffuse {
+impl Default for SimpleDiffuse<Color> {
     fn default() -> Self {
         SimpleDiffuse::new(Color::new(0.5, 0.5, 0.5))
     }
 }
 
-impl Material for SimpleDiffuse {
+impl<T: Texture> Material for SimpleDiffuse<T> {
     fn scatter(&self, incoming: &Ray, hit: &HitRecord) -> Option<Scatter> {
         let scatter_direction = Vec3::random_in_hemisphere(hit.normal);
         Some(Scatter {
             ray: Ray::with_time(hit.point, scatter_direction, incoming.time),
-            attenuation: self.albedo,
+            attenuation: self.albedo.value(hit.texture_u, hit.texture_v, hit.point),
         })
     }
 }
