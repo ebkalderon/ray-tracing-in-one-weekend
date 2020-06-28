@@ -1,3 +1,4 @@
+pub use self::bvh::Bvh;
 pub use self::sphere::{MovingSphere, Sphere};
 
 use std::fmt::Debug;
@@ -7,6 +8,7 @@ use crate::mat::Material;
 use crate::ray::Ray;
 use crate::vec3::{Point3, Vec3};
 
+mod bvh;
 mod sphere;
 
 pub trait Hittable: Debug + Send + Sync {
