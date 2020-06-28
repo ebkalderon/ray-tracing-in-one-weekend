@@ -3,7 +3,7 @@ use std::time::Duration;
 use rand::Rng;
 
 use camera::Camera;
-use geom::{Hittable, MovingSphere, Sphere};
+use geom::{Bvh, Hittable, MovingSphere, Sphere};
 use mat::{Dielectric, Lambertian, Metallic};
 use scene::Scene;
 use vec3::{Color, Point3, Vec3};
@@ -89,8 +89,9 @@ fn random_scene() -> Vec<Box<dyn Hittable>> {
 fn main() {
     println!("P3\n{} {}\n255", IMAGE_WIDTH, IMAGE_HEIGHT);
 
+    let bvh = Bvh::new(random_scene(), 0.0, 1.0).expect("Failed to build BVH");
     let scene = Scene {
-        world: random_scene(),
+        world: vec![Box::new(bvh)],
         ..Default::default()
     };
 
