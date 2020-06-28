@@ -1,4 +1,4 @@
-pub use self::texture::Texture;
+pub use self::texture::{CheckeredTexture, Texture};
 
 use std::fmt::Debug;
 

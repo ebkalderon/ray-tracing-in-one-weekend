@@ -4,7 +4,7 @@ use rand::Rng;
 
 use camera::Camera;
 use geom::{Bvh, Hittable, MovingSphere, Sphere};
-use mat::{Dielectric, Lambertian, Metallic};
+use mat::{CheckeredTexture, Dielectric, Lambertian, Metallic};
 use scene::Scene;
 use vec3::{Color, Point3, Vec3};
 
@@ -27,7 +27,10 @@ fn random_scene() -> Vec<Box<dyn Hittable>> {
     world.push(Box::new(Sphere::new(
         Point3::new(0.0, -1000.0, 0.0),
         1000.0,
-        Lambertian::new(Color::new(0.5, 0.5, 0.5)),
+        Lambertian::new(CheckeredTexture::new(
+            Color::new(0.2, 0.3, 0.1),
+            Color::new(0.9, 0.9, 0.9),
+        )),
     )));
 
     let mut rng = rand::thread_rng();

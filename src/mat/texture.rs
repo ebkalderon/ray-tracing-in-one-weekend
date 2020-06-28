@@ -11,3 +11,26 @@ impl Texture for Color {
         *self
     }
 }
+
+#[derive(Copy, Clone, Debug, PartialEq)]
+pub struct CheckeredTexture<T: Texture, U: Texture> {
+    pub odd: T,
+    pub even: U,
+}
+
+impl<T: Texture, U: Texture> CheckeredTexture<T, U> {
+    pub fn new(odd: T, even: U) -> Self {
+        CheckeredTexture { odd, even }
+    }
+}
+
+impl<T: Texture, U: Texture> Texture for CheckeredTexture<T, U> {
+    fn value(&self, u: f64, v: f64, point: Point3) -> Color {
+        let sines = (10.0 * point.x).sin() * (10.0 * point.y).sin() * (10.0 * point.z).sin();
+        if sines < 0.0 {
+            self.odd.value(u, v, point)
+        } else {
+            self.even.value(u, v, point)
+        }
+    }
+}
