@@ -2,7 +2,7 @@ use std::time::Duration;
 
 use camera::Camera;
 use geom::{Hittable, Sphere};
-use mat::{CheckeredTexture, Lambertian};
+use mat::{Lambertian, NoiseTexture};
 use scene::Scene;
 use vec3::{Color, Point3, Vec3};
 
@@ -19,18 +19,18 @@ const ASPECT_RATIO: f64 = 16.0 / 9.0;
 const IMAGE_WIDTH: usize = 384;
 const IMAGE_HEIGHT: usize = (IMAGE_WIDTH as f64 / ASPECT_RATIO) as usize;
 
-fn two_spheres() -> Vec<Box<dyn Hittable>> {
-    let checker = CheckeredTexture::new(Color::new(0.2, 0.3, 0.1), Color::new(0.9, 0.9, 0.9));
+fn two_perlin_spheres() -> Vec<Box<dyn Hittable>> {
+    let noise = NoiseTexture::new();
     vec![
         Box::new(Sphere::new(
-            Point3::new(0.0, -10.0, 0.0),
-            10.0,
-            Lambertian::new(checker),
+            Point3::new(0.0, -1000.0, 0.0),
+            1000.0,
+            Lambertian::new(noise.clone()),
         )),
         Box::new(Sphere::new(
-            Point3::new(0.0, 10.0, 0.0),
-            10.0,
-            Lambertian::new(checker),
+            Point3::new(0.0, 2.0, 0.0),
+            2.0,
+            Lambertian::new(noise),
         )),
     ]
 }
@@ -39,7 +39,7 @@ fn main() {
     println!("P3\n{} {}\n255", IMAGE_WIDTH, IMAGE_HEIGHT);
 
     let scene = Scene {
-        world: two_spheres(),
+        world: two_perlin_spheres(),
         ..Default::default()
     };
 
