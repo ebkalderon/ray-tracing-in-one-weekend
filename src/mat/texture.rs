@@ -37,16 +37,26 @@ impl<T: Texture, U: Texture> Texture for CheckeredTexture<T, U> {
 }
 
 #[derive(Clone, Debug, PartialEq)]
-pub struct NoiseTexture(Perlin);
+pub struct NoiseTexture {
+    noise: Perlin,
+    scale: f64,
+}
 
 impl NoiseTexture {
     pub fn new() -> Self {
-        NoiseTexture(Perlin::new())
+        NoiseTexture::with_scale(1.0)
+    }
+
+    pub fn with_scale(scale: f64) -> Self {
+        NoiseTexture {
+            noise: Perlin::new(),
+            scale,
+        }
     }
 }
 
 impl Texture for NoiseTexture {
     fn value(&self, _: f64, _: f64, point: Point3) -> Color {
-        Color::ones() * self.0.noise_at(point)
+        Color::ones() * self.noise.noise_at(self.scale * point)
     }
 }

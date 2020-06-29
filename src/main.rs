@@ -20,7 +20,7 @@ const IMAGE_WIDTH: usize = 384;
 const IMAGE_HEIGHT: usize = (IMAGE_WIDTH as f64 / ASPECT_RATIO) as usize;
 
 fn two_perlin_spheres() -> Vec<Box<dyn Hittable>> {
-    let noise = NoiseTexture::new();
+    let noise = NoiseTexture::with_scale(3.0);
     vec![
         Box::new(Sphere::new(
             Point3::new(0.0, -1000.0, 0.0),
