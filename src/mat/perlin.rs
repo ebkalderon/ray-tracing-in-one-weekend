@@ -32,9 +32,12 @@ impl Perlin {
     }
 
     pub fn noise_at(&self, point: Point3) -> f64 {
-        let u = point.x - point.x.floor();
-        let v = point.y - point.y.floor();
-        let w = point.z - point.z.floor();
+        let mut u = point.x - point.x.floor();
+        let mut v = point.y - point.y.floor();
+        let mut w = point.z - point.z.floor();
+        u = u.powi(2) * (3.0 - 2.0 * u);
+        v = v.powi(2) * (3.0 - 2.0 * v);
+        w = w.powi(2) * (3.0 - 2.0 * w);
 
         let i = point.x.floor();
         let j = point.y.floor();
