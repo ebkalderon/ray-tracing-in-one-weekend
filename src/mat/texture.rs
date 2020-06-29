@@ -1,5 +1,6 @@
 use std::fmt::Debug;
 
+use super::perlin::Perlin;
 use crate::vec3::{Color, Point3};
 
 pub trait Texture: Debug + Send + Sync {
@@ -32,5 +33,20 @@ impl<T: Texture, U: Texture> Texture for CheckeredTexture<T, U> {
         } else {
             self.even.value(u, v, point)
         }
+    }
+}
+
+#[derive(Clone, Debug, PartialEq)]
+pub struct NoiseTexture(Perlin);
+
+impl NoiseTexture {
+    pub fn new() -> Self {
+        NoiseTexture(Perlin::new())
+    }
+}
+
+impl Texture for NoiseTexture {
+    fn value(&self, _: f64, _: f64, point: Point3) -> Color {
+        Color::ones() * self.0.noise_at(point)
     }
 }
