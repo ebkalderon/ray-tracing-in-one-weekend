@@ -6,6 +6,7 @@ use crate::geom::HitRecord;
 use crate::ray::Ray;
 use crate::vec3::{Color, Vec3};
 
+mod perlin;
 mod texture;
 
 pub trait Material: Debug + Send + Sync {
