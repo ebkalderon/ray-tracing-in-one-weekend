@@ -38,6 +38,7 @@ pub struct HitRecord<'a> {
 }
 
 impl<'a> HitRecord<'a> {
+    #[inline]
     pub fn new(
         point: Point3,
         normal: Vec3,
@@ -54,6 +55,7 @@ impl<'a> HitRecord<'a> {
         }
     }
 
+    #[inline]
     pub fn with_face_normal(
         ray: Ray,
         point: Point3,
