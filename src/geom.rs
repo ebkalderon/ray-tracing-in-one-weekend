@@ -15,10 +15,11 @@ pub trait Hittable: Debug + Send + Sync {
 impl<T: AsRef<[Box<dyn Hittable>]> + Debug + Send + Sync> Hittable for T {
     fn hit(&self, ray: &Ray, (t_min, t_max): (f64, f64)) -> Option<HitRecord> {
         let mut closest_so_far: Option<HitRecord> = None;
+        let mut t_max = t_max;
 
         for object in self.as_ref().iter() {
-            let t_max = closest_so_far.as_ref().map(|rec| rec.t).unwrap_or(t_max);
             if let Some(record) = object.hit(ray, (t_min, t_max)) {
+                t_max = record.t;
                 closest_so_far = Some(record);
             }
         }
