@@ -21,7 +21,7 @@ impl<M: Material> Sphere<M> {
 }
 
 impl<M: Material> Hittable for Sphere<M> {
-    fn hit(&self, ray: Ray, (t_min, t_max): (f64, f64)) -> Option<HitRecord> {
+    fn hit(&self, ray: &Ray, (t_min, t_max): (f64, f64)) -> Option<HitRecord> {
         let origin_to_center = ray.origin - self.center;
         let a = ray.direction.len_squared();
         let half_b = origin_to_center.dot(ray.direction);
@@ -36,7 +36,7 @@ impl<M: Material> Hittable for Sphere<M> {
                 let point = ray.point_at(t);
                 let outward_normal = (point - self.center) / self.radius;
                 return Some(HitRecord::with_face_normal(
-                    ray,
+                    *ray,
                     point,
                     outward_normal,
                     &self.material,
@@ -49,7 +49,7 @@ impl<M: Material> Hittable for Sphere<M> {
                 let point = ray.point_at(t);
                 let outward_normal = (point - self.center) / self.radius;
                 return Some(HitRecord::with_face_normal(
-                    ray,
+                    *ray,
                     point,
                     outward_normal,
                     &self.material,

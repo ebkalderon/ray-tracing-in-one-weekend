@@ -5,7 +5,7 @@ use crate::ray::Ray;
 use crate::vec3::{Color, Vec3};
 
 pub trait Material: Debug + Send + Sync {
-    fn scatter(&self, incoming: Ray, hit: &HitRecord) -> Option<Scatter>;
+    fn scatter(&self, incoming: &Ray, hit: &HitRecord) -> Option<Scatter>;
 }
 
 #[derive(Clone, Debug, PartialEq)]
@@ -32,7 +32,7 @@ impl Default for Lambertian {
 }
 
 impl Material for Lambertian {
-    fn scatter(&self, _incoming: Ray, hit: &HitRecord) -> Option<Scatter> {
+    fn scatter(&self, _incoming: &Ray, hit: &HitRecord) -> Option<Scatter> {
         let scatter_direction = hit.normal + Vec3::random_unit();
         Some(Scatter {
             ray: Ray::new(hit.point, scatter_direction),
@@ -60,7 +60,7 @@ impl Default for SimpleDiffuse {
 }
 
 impl Material for SimpleDiffuse {
-    fn scatter(&self, _incoming: Ray, hit: &HitRecord) -> Option<Scatter> {
+    fn scatter(&self, _incoming: &Ray, hit: &HitRecord) -> Option<Scatter> {
         let scatter_direction = Vec3::random_in_hemisphere(hit.normal);
         Some(Scatter {
             ray: Ray::new(hit.point, scatter_direction),
@@ -91,7 +91,7 @@ impl Default for Metallic {
 }
 
 impl Material for Metallic {
-    fn scatter(&self, incoming: Ray, hit: &HitRecord) -> Option<Scatter> {
+    fn scatter(&self, incoming: &Ray, hit: &HitRecord) -> Option<Scatter> {
         let reflected = incoming.direction.to_unit().reflect(hit.normal);
         let scattered = Ray::new(
             hit.point,
@@ -120,7 +120,7 @@ impl Dielectric {
 }
 
 impl Material for Dielectric {
-    fn scatter(&self, incoming: Ray, hit: &HitRecord) -> Option<Scatter> {
+    fn scatter(&self, incoming: &Ray, hit: &HitRecord) -> Option<Scatter> {
         let etai_over_etat = if hit.is_front_face {
             1.0 / self.refraction_index
         } else {

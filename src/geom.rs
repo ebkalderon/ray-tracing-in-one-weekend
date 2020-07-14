@@ -9,11 +9,11 @@ use crate::vec3::{Point3, Vec3};
 mod sphere;
 
 pub trait Hittable: Debug + Send + Sync {
-    fn hit(&self, ray: Ray, t_range: (f64, f64)) -> Option<HitRecord>;
+    fn hit(&self, ray: &Ray, t_range: (f64, f64)) -> Option<HitRecord>;
 }
 
 impl<T: AsRef<[Box<dyn Hittable>]> + Debug + Send + Sync> Hittable for T {
-    fn hit(&self, ray: Ray, (t_min, t_max): (f64, f64)) -> Option<HitRecord> {
+    fn hit(&self, ray: &Ray, (t_min, t_max): (f64, f64)) -> Option<HitRecord> {
         let mut closest_so_far: Option<HitRecord> = None;
 
         for object in self.as_ref().iter() {
@@ -121,7 +121,7 @@ mod tests {
         let center_of_image = compute_ray(IMAGE_WIDTH / 2, IMAGE_HEIGHT / 2);
 
         let hit_record = world
-            .hit(center_of_image, (0.0, f64::MAX))
+            .hit(&center_of_image, (0.0, f64::MAX))
             .expect("ray didn't hit any objects");
 
         assert!(hit_record.is_front_face);
@@ -135,7 +135,7 @@ mod tests {
         let world = generate_world();
         let random_ray = Ray::new(Point3::new(0.0, 200.0, 0.0), Vec3::new(0.0, 200.0, 0.0));
 
-        let hit_record = world.hit(random_ray, (0.0, f64::MAX));
+        let hit_record = world.hit(&random_ray, (0.0, f64::MAX));
         assert!(hit_record.is_none());
     }
 }
