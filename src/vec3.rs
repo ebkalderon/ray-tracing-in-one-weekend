@@ -15,14 +15,17 @@ pub struct Vec3 {
 }
 
 impl Vec3 {
+    #[inline]
     pub const fn new(x: f64, y: f64, z: f64) -> Self {
         Vec3 { x, y, z }
     }
 
+    #[inline]
     pub const fn ones() -> Self {
         Vec3::new(1.0, 1.0, 1.0)
     }
 
+    #[inline]
     pub const fn zeros() -> Self {
         Vec3::new(0.0, 0.0, 0.0)
     }
