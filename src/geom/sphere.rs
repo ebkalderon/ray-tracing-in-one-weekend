@@ -21,6 +21,7 @@ impl<M: Material> Sphere<M> {
 }
 
 impl<M: Material> Hittable for Sphere<M> {
+    #[inline(always)]
     fn hit(&self, ray: &Ray, (t_min, t_max): (f64, f64)) -> Option<HitRecord> {
         let origin_to_center = ray.origin - self.center;
         let a = ray.direction.len_squared();
